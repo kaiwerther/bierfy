@@ -1,0 +1,36 @@
+{
+  "name": "kim2-frontend",
+  "private": true,
+  "version": "2.0.3",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.6.0",
+    "@fortawesome/free-brands-svg-icons": "^6.6.0",
+    "@fortawesome/free-regular-svg-icons": "^6.6.0",
+    "@fortawesome/free-solid-svg-icons": "^6.6.0",
+    "@fortawesome/vue-fontawesome": "^3.0.8",
+    "axios": "^1.3.4",
+    "bootstrap": "^5.3.3",
+    "dompurify": "^3.1.7",
+    "marked": "^14.1.3",
+    "openai": "^4.24.7",
+    "pinia": "^2.1.7",
+    "vue": "^3.2.47",
+    "vue-router": "^4.4.5",
+    "vue3-toastify": "^0.2.3"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^4.1.0",
+    "eslint": "^9.12.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-vue": "^9.29.0",
+    "prettier": "^3.3.3",
+    "sass": "1.76.0",
+    "vite": "^4.2.0",
+    "vite-plugin-eslint": "^1.8.1"
+  }
+}
