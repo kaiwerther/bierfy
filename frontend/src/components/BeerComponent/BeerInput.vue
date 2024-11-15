@@ -44,9 +44,7 @@ watch(
   () => {
     nextTick(() => {
       const beerInput = component.value.querySelector('#beer-name');
-      console.log('watcher for company');
       if (beerInput) {
-        console.log('Focusing beer input');
         beerInput.focus();
         beerInput.value = 'abc';
       }
@@ -57,7 +55,6 @@ watch(
 watch(
   () => selectedBeer.value,
   (newBeer) => {
-    console.log('New beer selected in beer input:', newBeer);
     emit('update:modelValue', newBeer);
   }
 );

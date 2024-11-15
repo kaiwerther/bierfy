@@ -40,9 +40,14 @@
       </div>
       <!-- Google Login Button -->
       <div class="mt-3 text-center">
-        <button type="button" class="btn btn-danger" @click="loginWithGoogle">
-          <i class="fab fa-google"></i> Sign in with Google
-        </button>
+        <div
+          id="loginWithGoogleButton"
+          class="loginWithGoogleButton"
+          @click="loginWithGoogle"
+        >
+          <img src="../assets/google.png" class="icon" />
+          <span class="buttonText">Login with Google</span>
+        </div>
       </div>
       <!-- Error Message -->
       <div v-if="error" class="alert alert-danger mt-3">
@@ -89,5 +94,36 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Add any additional styling here */
+#loginWithGoogleButton {
+  display: inline-block;
+  background: white;
+  color: #444;
+  width: 190px;
+  border-radius: 5px;
+  border: thin solid #888;
+  box-shadow: 1px 1px 1px grey;
+  white-space: nowrap;
+}
+#loginWithGoogleButton:hover {
+  cursor: pointer;
+}
+#loginWithGoogleButton .label {
+  font-family: serif;
+  font-weight: normal;
+}
+#loginWithGoogleButton .icon {
+  display: inline-block;
+  vertical-align: middle;
+  width: 30px;
+  height: 30px;
+}
+#loginWithGoogleButton .buttonText {
+  display: inline-block;
+  vertical-align: middle;
+  padding-left: 0.5em;
+  font-size: 14px;
+  font-weight: bold;
+  /* Use the Roboto font that is loaded in the <head> */
+  font-family: 'Roboto', sans-serif;
+}
 </style>

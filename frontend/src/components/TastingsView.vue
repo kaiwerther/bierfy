@@ -1,6 +1,6 @@
 <!-- src/components/TastingsView.vue -->
 <template>
-  <div class="container mt-5">
+  <div class="container mt-5 mb-5">
     <div class="header mb-5">
       <h2 class="display-4 text-uppercase">
         <font-awesome-icon icon="beer" />

@@ -24,8 +24,8 @@ import { faPlus } from '@fortawesome/free-solid-svg-icons';
   position: fixed;
   width: 60px;
   height: 60px;
-  bottom: 30px;
-  right: 30px;
+  bottom: 10px;
+  right: 10px;
   background-color: #ff5722; /* Vibrant color to match your theme */
   color: white;
   border-radius: 50%;

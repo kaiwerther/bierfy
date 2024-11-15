@@ -100,7 +100,6 @@ watch(
 const isSelecting = ref(false);
 
 const selectBeer = (beer) => {
-  console.log('Selected beer:', beer);
   isSelecting.value = true;
   searchTerm.value = beer?.name || '';
   showList.value = false;
@@ -140,7 +139,6 @@ const onBlur = () => {
     (beer) => beer.name === searchTerm.value
   );
   if (selected) {
-    console.log('Selected beer because of blur:', selected);
     selectBeer(selected);
   } else {
     selectBeer(null);

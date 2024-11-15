@@ -3,21 +3,11 @@
   <div
     class="home-container text-center d-flex flex-column justify-content-center align-items-center"
   >
-    <h1 class="display-4 mb-4 fancy-text">Welcome to Bierfy!</h1>
+    <h1 class="display-4 mb-4 fancy-text mt-5">Welcome to Bierfy</h1>
     <p class="lead mb-5">
       Discover, rate, and share your favorite beers with the world.
     </p>
-    <div class="graphic-container mb-5">
-      <picture>
-        <source srcset="../assets/app.webp" type="image/webp" />
-      </picture>
-    </div>
-    <router-link to="/signup" class="btn btn-primary btn-lg mb-2"
-      >Get Started</router-link
-    >
-    <router-link to="/login" class="btn btn-outline-secondary btn-lg"
-      >Login</router-link
-    >
+    <router-link to="/login" class="btn btn-primary btn-lg">Login</router-link>
   </div>
 </template>
 
@@ -27,7 +17,6 @@
 
 <style scoped>
 .home-container {
-  min-height: 100vh;
   padding: 2rem;
   background: linear-gradient(to bottom right, #ffefba, #ffffff);
 }
