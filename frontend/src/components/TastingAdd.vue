@@ -40,29 +40,7 @@
           rows="3"
         ></textarea>
       </div>
-      <!-- Public Options -->
-      <div class="mb-3 form-check">
-        <input
-          id="isRatingPublic"
-          v-model="isRatingPublic"
-          type="checkbox"
-          class="form-check-input"
-        />
-        <label class="form-check-label" for="isRatingPublic"
-          >Make rating public</label
-        >
-      </div>
-      <div class="mb-3 form-check">
-        <input
-          id="isPicturePublic"
-          v-model="isPicturePublic"
-          type="checkbox"
-          class="form-check-input"
-        />
-        <label class="form-check-label" for="isPicturePublic"
-          >Make picture public</label
-        >
-      </div>
+
       <!-- Submit Button -->
       <button type="submit" class="btn btn-primary">Add Tasting</button>
       <button type="button" class="btn btn-secondary ms-2" @click="cancel">
@@ -99,7 +77,7 @@ const isPicturePublic = ref(false);
 const error = ref('');
 
 const handleSubmit = async () => {
-  if (!selectedBeer.value || !selectedBeer.value.id) {
+  if (!selectedBeer.value || !selectedBeer.value.beer.id) {
     error.value = 'Please select a beer.';
     return;
   }
@@ -108,8 +86,27 @@ const handleSubmit = async () => {
     return;
   }
   try {
+    const beer = selectedBeer.value.beer;
+    const company = selectedBeer.value.company;
+    // create new company if companyid is negative
+    if (company.id < 0) {
+      const response = await axios.post('/api/beers/companies', {
+        name: company.name,
+      });
+      company.id = response.data.id;
+    }
+
+    // create new beer if beerid is negative
+    if (beer.id < 0) {
+      const response = await axios.post('/api/beers', {
+        name: beer.name,
+        company_id: company.id,
+      });
+      beer.id = response.data.id;
+    }
+
     await axios.post('/api/tastings', {
-      beer_id: selectedBeer.value.id, // Use the selected beer's ID
+      beer_id: beer.id, // Use the selected beer's ID
       rating: rating.value,
       notes: notes.value,
       is_rating_public: isRatingPublic.value,

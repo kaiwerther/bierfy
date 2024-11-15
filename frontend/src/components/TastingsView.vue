@@ -8,7 +8,15 @@
       </h2>
     </div>
 
-    <div v-if="tastings.length" class="tasting-list">
+    <!-- Loading Indicator -->
+    <div v-if="isLoading" class="d-flex justify-content-center my-5">
+      <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+    </div>
+
+    <!-- Tasting List -->
+    <div v-else-if="tastings.length" class="tasting-list">
       <div class="row">
         <div
           v-for="tasting in tastings"
@@ -63,6 +71,7 @@
       </div>
     </div>
 
+    <!-- No Tastings Message -->
     <div v-else class="text-center">
       <p class="lead">
         You have no tastings yet. Click "Add New Tasting" to get started!
@@ -79,29 +88,38 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import FloatingAddButton from './FloatingAddButton.vue'; // Import the new component
 
-// Import default image
+// Loading state
+const isLoading = ref(true);
 
+// Tastings data
 const tastings = ref([]);
 
+// Fetch tastings from the API
 const fetchTastings = async () => {
+  isLoading.value = true;
   try {
     const response = await axios.get('/api/tastings');
     tastings.value = response.data;
   } catch (error) {
     console.error('Error fetching tastings:', error);
+  } finally {
+    isLoading.value = false;
   }
 };
 
+// Format date utility
 const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
+// Open edit form (implementation pending)
 const openEditForm = (tasting) => {
   // Implement the logic for editing a tasting, e.g., open a modal
   // isFormOpen.value = true;
 };
 
+// Delete a tasting
 const deleteTasting = async (tastingId) => {
   if (confirm('Are you sure you want to delete this tasting?')) {
     try {
@@ -113,6 +131,7 @@ const deleteTasting = async (tastingId) => {
   }
 };
 
+// Fetch tastings when the component is mounted
 onMounted(() => {
   fetchTastings();
 });

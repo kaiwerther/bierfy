@@ -1,10 +1,18 @@
 <template>
   <div ref="component" class="beer-input">
-    <div class="form-group combined-inputs">
-      <CompanySelector v-model="selectedCompany" />
-      <BeerSelector
+    <div class="form-group">
+      <SelectWithDummy
+        v-model="selectedCompany"
+        :options="companies"
+        placeholder="Select Company"
+      />
+      <SelectWithDummy
+        v-if="selectedCompany"
         v-model="selectedBeer"
-        :selected-company="selectedCompany"
+        class="mt-1"
+        :options="beersPerCompany[selectedCompany?.value]"
+        :placeholder="!selectedCompany ? 'Select Company first' : 'Select Beer'"
+        :disabled="!selectedCompany"
       />
     </div>
     <!-- Success and Error Messages -->
@@ -18,9 +26,11 @@
 </template>
 
 <script setup>
-import { ref, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
-import CompanySelector from './CompanySelector.vue';
-import BeerSelector from './BeerSelector.vue';
+import { ref, onMounted, watch } from 'vue';
+import SelectWithDummy from './SelectWithDummy.vue';
+import axios from 'axios';
+const companies = ref([]);
+const beersPerCompany = ref({});
 
 const props = defineProps({
   modelValue: {
@@ -29,95 +39,60 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['update:modelValue']);
-
 const selectedCompany = ref(props.modelValue?.company || null);
-const selectedBeer = ref(props.modelValue || null);
+const selectedBeer = ref(props.modelValue?.beer || null);
+
+// load list of companies on page load from api
+onMounted(async () => {
+  const response = await axios.get('/api/beers/companies');
+  companies.value = response.data.map((company) => ({
+    value: company.id,
+    label: company.name,
+  }));
+});
+
+// load list of beers for selected company on company change
+watch(
+  () => selectedCompany,
+  async (newCompany) => {
+    if (newCompany.value) {
+      const response = await axios.get('/api/beers', {
+        params: { company_id: newCompany.value.value },
+      });
+      beersPerCompany.value[newCompany.value.value] = response.data.map(
+        (beer) => ({
+          value: beer.id,
+          label: beer.name,
+        })
+      );
+    }
+  },
+  { deep: true, immediate: true }
+);
+
+watch(
+  () => selectedBeer,
+  (newBeer) => {
+    emit('update:modelValue', {
+      company: {
+        id: selectedCompany.value.value,
+        name: selectedCompany.value.label,
+      },
+      beer: { id: newBeer.value.value, name: newBeer.value.label },
+    });
+  },
+  { deep: true }
+);
+
+const emit = defineEmits(['update:modelValue']);
 
 const successMessage = ref('');
 const errorMessage = ref('');
 
 const component = ref(null);
-// watch on selectedCompany instead
-watch(
-  () => selectedCompany.value,
-  () => {
-    nextTick(() => {
-      const beerInput = component.value.querySelector('#beer-name');
-      if (beerInput) {
-        beerInput.focus();
-        beerInput.value = 'abc';
-      }
-    });
-  }
-);
-
-watch(
-  () => selectedBeer.value,
-  (newBeer) => {
-    emit('update:modelValue', newBeer);
-  }
-);
-
-const onClickOutside = (event) => {
-  if (component.value && !component.value.contains(event.target)) {
-    // Close any open suggestion lists
-    const suggestionLists =
-      component.value.querySelectorAll('.suggestion-list');
-    suggestionLists.forEach((list) => {
-      list.style.display = 'none';
-    });
-  }
-};
-
-onMounted(() => {
-  document.addEventListener('click', onClickOutside);
-});
-
-onBeforeUnmount(() => {
-  document.removeEventListener('click', onClickOutside);
-});
 </script>
 
 <style scoped>
-/* src/components/BeerInput.vue */
-.beer-input {
-  position: relative;
-}
-
-.combined-inputs {
-  display: flex;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  box-sizing: border-box;
-}
-
-.input-wrapper {
-  flex: 1;
-  position: relative;
-}
-
-.input-wrapper:not(:last-child) {
-  border-right: 1px solid #ced4da; /* Faint dividing line */
-}
-
-.form-control {
-  border: none;
-  border-radius: 0;
-  height: 100%;
-  padding: 0.375rem 0.75rem;
-  box-sizing: border-box;
-}
-
-.form-control:disabled {
-  background-color: #e9ecef;
-  cursor: not-allowed;
-}
-
-.form-control:focus {
-  box-shadow: none;
-}
-
 .alert {
   margin-top: 0.75rem;
 }
