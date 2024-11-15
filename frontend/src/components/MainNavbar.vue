@@ -2,7 +2,7 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <router-link class="navbar-brand" to="/">Bierfy</router-link>
+      <router-link class="navbar-brand fancy-text" to="/">Bierfy</router-link>
       <button
         class="navbar-toggler"
         type="button"
@@ -82,9 +82,7 @@ const logout = () => {
 
 <style scoped>
 .navbar-brand {
-  color: #ff5722 !important;
   font-size: 1.5rem;
-  font-family: 'Pacifico', cursive;
 }
 
 .nav-link {

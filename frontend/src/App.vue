@@ -25,4 +25,9 @@ body {
   background-repeat: no-repeat;
   background-size: cover;
 }
+
+.fancy-text {
+  font-family: 'Pacifico', cursive;
+  color: #ff5722;
+}
 </style>
