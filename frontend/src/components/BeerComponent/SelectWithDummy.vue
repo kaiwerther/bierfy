@@ -8,7 +8,9 @@
       :is-disabled="disabled"
       @update:model-value="updateSelect"
       @search="onSearch"
-    />
+    >
+      <template #no-options> Type to add a new Beer. </template>
+    </VueSelect>
   </div>
 </template>
 
@@ -51,7 +53,7 @@ const nextNegativeId = ref(0);
 const updateSelect = (value) => {
   if (!value) {
     emit('update:modelValue', null);
-  } else if (value.value < 0) {
+  } else if (value < 0) {
     emit('update:modelValue', {
       value: nextNegativeId.value,
       label: searchText.value,
