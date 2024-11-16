@@ -5,6 +5,8 @@
         v-model="selectedCompany"
         :options="companies"
         placeholder="Select Company"
+        empty-text="Type to add a new company"
+        :class="{ 'has-error': error }"
       />
       <SelectWithDummy
         v-if="selectedCompany"
@@ -13,14 +15,9 @@
         :options="beersPerCompany[selectedCompany?.value]"
         :placeholder="!selectedCompany ? 'Select Company first' : 'Select Beer'"
         :disabled="!selectedCompany"
+        empty-text="Type to add a new beer"
+        :class="{ 'has-error': error }"
       />
-    </div>
-    <!-- Success and Error Messages -->
-    <div v-if="successMessage" class="alert alert-success mt-3">
-      {{ successMessage }}
-    </div>
-    <div v-if="errorMessage" class="alert alert-danger mt-3">
-      {{ errorMessage }}
     </div>
   </div>
 </template>
@@ -29,6 +26,8 @@
 import { ref, onMounted, watch } from 'vue';
 import SelectWithDummy from './SelectWithDummy.vue';
 import axios from 'axios';
+
+const emit = defineEmits(['update:modelValue']);
 const companies = ref([]);
 const beersPerCompany = ref({});
 
@@ -36,6 +35,10 @@ const props = defineProps({
   modelValue: {
     type: Object,
     default: null,
+  },
+  error: {
+    type: Boolean,
+    default: false,
   },
 });
 
@@ -78,22 +81,18 @@ watch(
         id: selectedCompany.value.value,
         name: selectedCompany.value.label,
       },
-      beer: { id: newBeer.value.value, name: newBeer.value.label },
+      beer: newBeer.value
+        ? { id: newBeer.value.value, name: newBeer.value.label }
+        : undefined,
     });
   },
   { deep: true }
 );
-
-const emit = defineEmits(['update:modelValue']);
-
-const successMessage = ref('');
-const errorMessage = ref('');
-
-const component = ref(null);
 </script>
 
 <style scoped>
-.alert {
-  margin-top: 0.75rem;
+.has-error {
+  border: 1px solid #dc3545;
+  border-radius: 5px;
 }
 </style>

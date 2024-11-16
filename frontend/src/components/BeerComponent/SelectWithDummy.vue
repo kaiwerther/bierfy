@@ -6,10 +6,13 @@
       :placeholder="placeholder"
       :model-value="localModelValue"
       :is-disabled="disabled"
+      empty-text="type to add a new taster."
+      :is-clearable="isClearable"
       @update:model-value="updateSelect"
       @search="onSearch"
+      @option-deselected="onOptionDeselected"
     >
-      <template #no-options> Type to add a new Beer. </template>
+      <template #no-options> {{ emptyText }} </template>
     </VueSelect>
   </div>
 </template>
@@ -35,9 +38,17 @@ const { modelValue, options } = defineProps({
     type: String,
     default: 'Select',
   },
+  emptyText: {
+    type: String,
+    default: 'No options available',
+  },
+  isClearable: {
+    type: Boolean,
+    default: true,
+  },
 });
 
-const emit = defineEmits(['update:modelValue']);
+const emit = defineEmits(['update:modelValue', 'option-deselected']);
 
 const localModelValue = ref(modelValue?.value);
 watch(
@@ -49,6 +60,10 @@ watch(
 
 const searchText = ref(null);
 const nextNegativeId = ref(0);
+
+const onOptionDeselected = (value) => {
+  emit('option-deselected', value);
+};
 
 const updateSelect = (value) => {
   if (!value) {

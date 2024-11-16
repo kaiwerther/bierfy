@@ -21,7 +21,7 @@
         <div
           v-for="tasting in tastings"
           :key="tasting.id"
-          class="col-md-6 col-lg-4 mb-4"
+          class="col-sm-6 col-lg-4 mb-4"
         >
           <div class="card h-100 shadow-sm">
             <img
@@ -38,26 +38,35 @@
               <p class="card-text text-muted">
                 {{ formatDate(tasting.created_at) }}
               </p>
-              <div class="mb-2">
-                <span v-for="n in 5" :key="n" class="star">
+
+              <div class="mb-2 d-flex justify-content-between">
+                <strong>Average Rating:</strong>
+                <strong
+                  >{{ averageRating(tasting) }} / 10
                   <font-awesome-icon
-                    :icon="
-                      n <= tasting.rating ? ['fas', 'star'] : ['far', 'star']
-                    "
-                    :class="
-                      n <= tasting.rating ? 'text-warning' : 'text-secondary'
-                    "
-                  />
-                </span>
+                    :icon="['fas', 'star']"
+                    class="text-warning"
+                /></strong>
               </div>
+
+              <div
+                v-for="(tastingRating, i) in tasting.TastingRatings"
+                :key="i"
+                class="ms-1 d-flex justify-content-between"
+              >
+                <div>{{ tastingRating.taster }}</div>
+
+                <div>
+                  {{ tastingRating.rating }} / 10
+                  <font-awesome-icon
+                    :icon="['fas', 'star']"
+                    class="text-warning"
+                  />
+                </div>
+              </div>
+
               <p class="card-text flex-grow-1">{{ tasting.notes }}</p>
-              <div class="mt-auto d-flex justify-content-between">
-                <button
-                  class="btn btn-outline-primary btn-sm"
-                  @click="openEditForm(tasting)"
-                >
-                  <font-awesome-icon icon="edit" class="me-1" /> Edit
-                </button>
+              <div class="mt-auto d-flex justify-content-end">
                 <button
                   class="btn btn-outline-danger btn-sm"
                   @click="deleteTasting(tasting.id)"
@@ -107,6 +116,14 @@ const fetchTastings = async () => {
   }
 };
 
+const averageRating = (tasting) => {
+  const totalRating = tasting.TastingRatings.reduce(
+    (acc, rating) => acc + rating.rating,
+    0
+  );
+  return (totalRating / tasting.TastingRatings.length).toFixed(1);
+};
+
 // Format date utility
 const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -114,7 +131,7 @@ const formatDate = (dateString) => {
 };
 
 // Open edit form (implementation pending)
-const openEditForm = (tasting) => {
+const openEditForm = () => {
   // Implement the logic for editing a tasting, e.g., open a modal
   // isFormOpen.value = true;
 };

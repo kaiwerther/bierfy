@@ -5,21 +5,15 @@ import jwt from 'jsonwebtoken';
 
 class AuthController {
   async register(req, res) {
-    try {
       const user = await authService.register(req.body);
       res.status(201).json({ message: 'User registered successfully', user });
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+
   }
 
   async login(req, res) {
-    try {
       const { token, user } = await authService.login(req.body.email, req.body.password);
       res.json({ token, user});
-    } catch (error) {
-      res.status(400).json({ error: error.message });
-    }
+
   }
 
   async googleCallback(req, res) {

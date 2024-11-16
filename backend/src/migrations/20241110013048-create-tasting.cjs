@@ -16,10 +16,6 @@ module.exports = {
         references: { model: 'beers', key: 'id' },
         onDelete: 'CASCADE'
       },
-      rating: { type: Sequelize.INTEGER, validate: { min: 1, max: 5 } },
-      notes: { type: Sequelize.TEXT },
-      is_rating_public: { type: Sequelize.BOOLEAN, defaultValue: false },
-      is_picture_public: { type: Sequelize.BOOLEAN, defaultValue: false },
       created_at: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('NOW') }
     });
   },

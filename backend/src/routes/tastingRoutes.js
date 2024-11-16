@@ -10,5 +10,8 @@ router.put('/:tasting_id', authenticateToken, tastingController.updateTasting);
 router.delete('/:tasting_id', authenticateToken, tastingController.deleteTasting);
 router.post('/:tasting_id/upload', authenticateToken, tastingController.uploadImage);
 router.get('/:tasting_id/images', authenticateToken, tastingController.getTastingImages);
+// get all tasters
+router.get('/tasters', authenticateToken, tastingController.getTasters);
+
 
 export default router;

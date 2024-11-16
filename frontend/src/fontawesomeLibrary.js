@@ -9,6 +9,7 @@ import {
   faBeer,
   faWarehouse,
   faPlus,
+  faTimesCircle,
 } from '@fortawesome/free-solid-svg-icons';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 
@@ -21,5 +22,6 @@ library.add(
   faEdit,
   faTrash,
   faBeer,
-  faWarehouse
+  faWarehouse,
+  faTimesCircle
 );

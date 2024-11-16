@@ -1,20 +1,28 @@
 // src/models/tasting.js
 import { Model, DataTypes } from 'sequelize';
 
-class Tasting extends Model {
+class TastingRating extends Model {
   static init(sequelize) {
     return super.init({
-      user_id: {
+      tasting_id: {
         type: DataTypes.INTEGER,
         allowNull: false
       },
-      beer_id: {
+      user_id: { 
         type: DataTypes.INTEGER,
         allowNull: false
+      },
+      taster: {
+        type: DataTypes.STRING(255),
+      },
+      notes: DataTypes.TEXT,
+      rating: {
+        type: DataTypes.INTEGER,
+        validate: { min: 1, max: 10 }
       },
     }, {
       sequelize,
-      tableName: 'tastings',
+      tableName: 'tasting_ratings',
       timestamps: true,
       createdAt: 'created_at',
       updatedAt: false
@@ -24,9 +32,9 @@ class Tasting extends Model {
   static associate(models) {
     this.belongsTo(models.User, { foreignKey: 'user_id' });
     this.belongsTo(models.Beer, { foreignKey: 'beer_id' });
-    this.hasMany(models.TastingRating, { foreignKey: 'tasting_id' });
+    this.hasMany(models.Image, { foreignKey: 'tasting_id' });
   }
 }
 
 
-export default Tasting;
+export default TastingRating;

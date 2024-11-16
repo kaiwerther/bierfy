@@ -5,7 +5,7 @@ class TastingService {
   async getUserTastings(userId) {
     return await db.Tasting.findAll({
       where: { user_id: userId },
-      attributes: ['id', 'rating', 'notes', 'is_rating_public', 'is_picture_public', 'created_at'],
+      attributes: ['id', 'created_at'],
       include: [{
         model: db.Beer,
         attributes: ['name'],
@@ -13,21 +13,38 @@ class TastingService {
           model: db.Company,
           attributes: ['name']
         }]
-      }]
+      },
+      {
+        model: db.TastingRating,
+        attributes: ['taster', 'rating']
+      },]
     });
     //make beer lowercase
 
   }
 
+  async getTasters(userId) {
+    // get all distinct tasters from tasting_ratings
+    return await db.TastingRating.findAll({
+      where: { user_id: userId },
+      attributes: ['taster'],
+      group: ['taster']
+    });
+  }
+
   async addTasting(data) {
-    return await db.Tasting.create({
+    const tasting = await db.Tasting.create({
       user_id: data.userId,
       beer_id: data.beerId,
-      rating: data.rating,
-      notes: data.notes,
-      is_rating_public: data.isRatingPublic,
-      is_picture_public: data.isPicturePublic
     });
+    const ratings = data.ratings.map(rating => ({
+      tasting_id: tasting.id,
+      user_id: data.userId,
+      taster: rating.taster,
+      rating: rating.rating
+    }));
+    await db.TastingRating.bulkCreate(ratings);
+    return tasting;
   }
 
   async updateTasting(tastingId, userId, updates) {

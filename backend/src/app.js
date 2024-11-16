@@ -6,6 +6,7 @@ import express from 'express';
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
+import 'express-async-errors';
 
 // Import routes
 import authRoutes from './routes/authRoutes.js';
@@ -44,7 +45,7 @@ app.use('/api/payments', paymentRoutes);
 
 // Global Error Handler
 app.use((err, req, res, _next) => {
-  console.error('Global error handler:', err);
+  console.log('Global error handler:', err);
   res.status(500).json({ message: 'Internal Server Error' });
 });
 

@@ -5,42 +5,12 @@
       <!-- Beer Selection -->
       <div class="mb-3">
         <label for="beer" class="form-label">Beer</label>
-        <BeerInput v-model="selectedBeer" />
+        <BeerInput v-model="selectedBeer" :error="beerError" />
       </div>
       <!-- Rating -->
       <div class="mb-3">
-        <label class="form-label">Rating</label>
-        <div>
-          <span
-            v-for="n in 5"
-            :key="n"
-            class="star"
-            @click="rating = n"
-            @mouseover="hoverRating = n"
-            @mouseleave="hoverRating = 0"
-          >
-            <font-awesome-icon
-              :icon="
-                n <= (hoverRating || rating) ? ['fas', 'star'] : ['far', 'star']
-              "
-              :class="
-                n <= (hoverRating || rating) ? 'text-warning' : 'text-secondary'
-              "
-            />
-          </span>
-        </div>
+        <RatingInput v-model="tastings" :error="ratingError" />
       </div>
-      <!-- Notes -->
-      <div class="mb-3">
-        <label for="notes" class="form-label">Notes</label>
-        <textarea
-          id="notes"
-          v-model="notes"
-          class="form-control"
-          rows="3"
-        ></textarea>
-      </div>
-
       <!-- Submit Button -->
       <button type="submit" class="btn btn-primary">Add Tasting</button>
       <button type="button" class="btn btn-secondary ms-2" @click="cancel">
@@ -55,34 +25,42 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 import axios from 'axios';
 import { useRouter } from 'vue-router';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import { library } from '@fortawesome/fontawesome-svg-core';
-import { faStar as fasStar } from '@fortawesome/free-solid-svg-icons';
-import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 import BeerInput from './BeerComponent/BeerInput.vue';
+import RatingInput from './BeerComponent/RatingInput.vue';
 
-// Add icons to the library
-library.add(fasStar, farStar);
-
+const beerError = ref(false);
+const ratingError = ref(false);
 const router = useRouter();
 const selectedBeer = ref(null); // Holds the selected beer object
-const rating = ref(0);
-const hoverRating = ref(0);
-const notes = ref('');
-const isRatingPublic = ref(false);
-const isPicturePublic = ref(false);
+const tastings = ref([]);
+
 const error = ref('');
 
+// reset error b ooleans when value changes
+watch(selectedBeer, () => {
+  error.value = '';
+  beerError.value = false;
+});
+watch(tastings, () => {
+  error.value = '';
+  ratingError.value = false;
+});
+
 const handleSubmit = async () => {
-  if (!selectedBeer.value || !selectedBeer.value.beer.id) {
+  if (!selectedBeer.value?.beer?.id) {
     error.value = 'Please select a beer.';
+    beerError.value = true;
     return;
   }
-  if (rating.value === 0) {
+  const filteredTastings = tastings.value.filter(
+    (tasting) => tasting.taster && tasting.rating > 0
+  );
+  if (filteredTastings.length === 0) {
     error.value = 'Please provide a rating.';
+    ratingError.value = true;
     return;
   }
   try {
@@ -107,10 +85,10 @@ const handleSubmit = async () => {
 
     await axios.post('/api/tastings', {
       beer_id: beer.id, // Use the selected beer's ID
-      rating: rating.value,
-      notes: notes.value,
-      is_rating_public: isRatingPublic.value,
-      is_picture_public: isPicturePublic.value,
+      ratings: filteredTastings.map((tasting) => ({
+        taster: tasting.taster.label,
+        rating: tasting.rating,
+      })),
     });
     router.push('/tastings');
   } catch (err) {
