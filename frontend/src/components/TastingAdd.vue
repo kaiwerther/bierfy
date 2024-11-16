@@ -99,10 +99,12 @@ const handleSubmit = async () => {
     const formData = new FormData();
     formData.append('beer_id', beer.id);
     formData.append('ratings', JSON.stringify(transformedRatings)); // Assuming ratings is an array
-    formData.append(
-      'image',
-      convertDataURLToFile(imageData.value, 'cropped-image.png')
-    ); // The cropped image file
+    if (imageData.value) {
+      formData.append(
+        'image',
+        convertDataURLToFile(imageData.value, 'cropped-image.png')
+      );
+    }
 
     await axios.post('/api/tastings', formData, {
       headers: {

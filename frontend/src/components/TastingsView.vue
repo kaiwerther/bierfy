@@ -23,7 +23,7 @@
           :key="tasting.id"
           class="col-sm-6 col-lg-4 mb-4"
         >
-          <TastingCard :tasting="tasting" @delete="deleteTasting(tasting)" />
+          <TastingCard :tasting="tasting" @delete="deleteTasting(tasting.id)" />
         </div>
       </div>
     </div>

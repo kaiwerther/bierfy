@@ -13,7 +13,6 @@ class TastingController {
     try {
       // Extract data from request body
       const { beer_id, ratings } = req.body;
-      console.log(req.body);
 
       // Ensure that ratings are provided and are in correct format
       if (!ratings || !Array.isArray(JSON.parse(ratings))) {
@@ -58,10 +57,8 @@ class TastingController {
 
   // New method to retrieve a specific image for a tasting
   async getTastingImage(req, res) {
-    console.log('Get tasting image');
     try {
       const tastingId = req.params.tasting_id;
-      console.log('Tasting ID:', tastingId);
 
       // Fetch the image record from the database
       const tasting = await tastingService.getTastingById(tastingId);
@@ -72,13 +69,16 @@ class TastingController {
 
       const image = await tastingService.getImageByTastingId(tastingId);
 
+      if (image === null) {
+        return res.status(404).json({ error: 'No Image found for tasting.' });
+      }
+
       if (tasting.user_id !== req.user.id) {
         return res
           .status(403)
           .json({ error: 'Forbidden: You do not have access to this image.' });
       }
 
-      console.log(image);
       // Construct the absolute path to the image
       const imagePath = path.join(process.env.IMAGE_PATH, image.image_path);
 

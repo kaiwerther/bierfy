@@ -2,8 +2,7 @@
   <div class="card h-100 shadow-sm">
     <div class="image-container position-relative">
       <img
-        v-if="imageUrl"
-        :src="imageUrl"
+        :src="imageUrl || '/beer.webp'"
         class="card-img-top tasting-image"
         :alt="tasting.Beer.name"
         :class="{ 'limited-height': !isExpanded }"
@@ -88,11 +87,15 @@ const imageUrl = ref(null);
 
 const loadImage = async (tasting) => {
   try {
-    const response = await axios.get(`/api/tastings/${tasting.id}/image`, {
-      responseType: 'blob',
-    });
-    const url = URL.createObjectURL(response.data);
-    imageUrl.value = url;
+    if (tasting.hasImage) {
+      const response = await axios.get(`/api/tastings/${tasting.id}/image`, {
+        responseType: 'blob',
+      });
+      const url = URL.createObjectURL(response.data);
+      imageUrl.value = url;
+    } else {
+      imageUrl.value = null;
+    }
   } catch (error) {
     console.error('Error loading image:', error);
   }

@@ -3,7 +3,7 @@ import db from '../models/index.js';
 
 class TastingService {
   async getUserTastings(userId) {
-    return await db.Tasting.findAll({
+    const tastings = await db.Tasting.findAll({
       where: { user_id: userId },
       attributes: ['id', 'created_at'],
       include: [
@@ -21,9 +21,18 @@ class TastingService {
           model: db.TastingRating,
           attributes: ['taster', 'rating'],
         },
+        { model: db.Image, attributes: ['image_path'] },
       ],
     });
-    //make beer lowercase
+
+    //remove Image property and replace with hasImage true/false
+    return tastings.map((tasting) => {
+      return {
+        ...tasting.toJSON(),
+        hasImage: !!tasting.Image,
+        Image: undefined,
+      };
+    });
   }
 
   async getTasters(userId) {
