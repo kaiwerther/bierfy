@@ -3,30 +3,33 @@ import { Model, DataTypes } from 'sequelize';
 
 class TastingRating extends Model {
   static init(sequelize) {
-    return super.init({
-      tasting_id: {
-        type: DataTypes.INTEGER,
-        allowNull: false
+    return super.init(
+      {
+        tasting_id: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+        },
+        user_id: {
+          type: DataTypes.INTEGER,
+          allowNull: false,
+        },
+        taster: {
+          type: DataTypes.STRING(255),
+        },
+        notes: DataTypes.TEXT,
+        rating: {
+          type: DataTypes.INTEGER,
+          validate: { min: 1, max: 10 },
+        },
       },
-      user_id: { 
-        type: DataTypes.INTEGER,
-        allowNull: false
-      },
-      taster: {
-        type: DataTypes.STRING(255),
-      },
-      notes: DataTypes.TEXT,
-      rating: {
-        type: DataTypes.INTEGER,
-        validate: { min: 1, max: 10 }
-      },
-    }, {
-      sequelize,
-      tableName: 'tasting_ratings',
-      timestamps: true,
-      createdAt: 'created_at',
-      updatedAt: false
-    });
+      {
+        sequelize,
+        tableName: 'tasting_ratings',
+        timestamps: true,
+        createdAt: 'created_at',
+        updatedAt: false,
+      }
+    );
   }
 
   static associate(models) {
@@ -35,6 +38,5 @@ class TastingRating extends Model {
     this.hasMany(models.Image, { foreignKey: 'tasting_id' });
   }
 }
-
 
 export default TastingRating;

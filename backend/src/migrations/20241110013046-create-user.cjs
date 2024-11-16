@@ -9,10 +9,14 @@ module.exports = {
       password: { type: Sequelize.STRING(255) },
       google_id: { type: Sequelize.STRING(255) },
       is_pro: { type: Sequelize.BOOLEAN, defaultValue: false },
-      created_at: { type: Sequelize.DATE, allowNull: false, defaultValue: Sequelize.fn('NOW') }
+      created_at: {
+        type: Sequelize.DATE,
+        allowNull: false,
+        defaultValue: Sequelize.fn('NOW'),
+      },
     });
   },
-  down: async (queryInterface, Sequelize) => {
+  down: async (queryInterface) => {
     await queryInterface.dropTable('users');
-  }
+  },
 };

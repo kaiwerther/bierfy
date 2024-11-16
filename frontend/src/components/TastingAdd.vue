@@ -9,7 +9,13 @@
       </div>
       <!-- Rating -->
       <div class="mb-3">
+        <label for="beer" class="form-label">Ratings</label>
         <RatingInput v-model="tastings" :error="ratingError" />
+      </div>
+      <!-- Image Upload -->
+      <div class="mb-3">
+        <label for="image" class="form-label">Image</label>
+        <ImageUpload @image-changed="imageData = $event" />
       </div>
       <!-- Submit Button -->
       <button type="submit" class="btn btn-primary">Add Tasting</button>
@@ -30,12 +36,14 @@ import axios from 'axios';
 import { useRouter } from 'vue-router';
 import BeerInput from './BeerComponent/BeerInput.vue';
 import RatingInput from './BeerComponent/RatingInput.vue';
+import ImageUpload from './BeerComponent/ImageUpload.vue';
 
 const beerError = ref(false);
 const ratingError = ref(false);
 const router = useRouter();
 const selectedBeer = ref(null); // Holds the selected beer object
 const tastings = ref([]);
+const imageData = ref(null);
 
 const error = ref('');
 
@@ -83,12 +91,23 @@ const handleSubmit = async () => {
       beer.id = response.data.id;
     }
 
-    await axios.post('/api/tastings', {
-      beer_id: beer.id, // Use the selected beer's ID
-      ratings: filteredTastings.map((tasting) => ({
-        taster: tasting.taster.label,
-        rating: tasting.rating,
-      })),
+    const transformedRatings = filteredTastings.map((tasting) => ({
+      taster: tasting.taster.label,
+      rating: tasting.rating,
+    }));
+
+    const formData = new FormData();
+    formData.append('beer_id', beer.id);
+    formData.append('ratings', JSON.stringify(transformedRatings)); // Assuming ratings is an array
+    formData.append(
+      'image',
+      convertDataURLToFile(imageData.value, 'cropped-image.png')
+    ); // The cropped image file
+
+    await axios.post('/api/tastings', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
     });
     router.push('/tastings');
   } catch (err) {
@@ -97,6 +116,20 @@ const handleSubmit = async () => {
       err.response?.data?.error ||
       'An error occurred while adding the tasting.';
   }
+};
+
+const convertDataURLToFile = (dataURL, filename) => {
+  const arr = dataURL.split(',');
+  const mime = arr[0].match(/:(.*?);/)[1];
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+
+  return new File([u8arr], filename, { type: mime });
 };
 
 const cancel = () => {

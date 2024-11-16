@@ -1,6 +1,7 @@
 // src/controllers/tastingController.js
 import tastingService from '../services/tastingService.js';
-import upload from '../utils/multerConfig.js';
+import path from 'path';
+import fs from 'fs/promises'; // Use the promises API for async/await
 
 class TastingController {
   async getUserTastings(req, res) {
@@ -9,52 +10,94 @@ class TastingController {
   }
 
   async addTasting(req, res) {
-      const data = {
-        userId: req.user.id,
-        beerId: req.body.beer_id,
-        ratings: req.body.ratings,
-      };
-      const tasting = await tastingService.addTasting(data);
-      res.status(201).json(tasting);
+    try {
+      // Extract data from request body
+      const { beer_id, ratings } = req.body;
+      console.log(req.body);
 
+      // Ensure that ratings are provided and are in correct format
+      if (!ratings || !Array.isArray(JSON.parse(ratings))) {
+        return res
+          .status(400)
+          .json({ error: 'Ratings must be provided as an array.' });
+      }
+
+      // Process the uploaded image
+      let imagePath = null;
+      if (req.file) {
+        imagePath = req.file.filename; // Adjust the path as needed
+      }
+
+      // Prepare data for service
+      const data = {
+        userId: req.user.id, // Assuming authentication middleware sets req.user
+        beerId: beer_id,
+        ratings: JSON.parse(ratings),
+        imagePath: imagePath,
+      };
+
+      // Call the service to add tasting
+      const tasting = await tastingService.addTasting(data);
+
+      res.status(201).json(tasting);
+    } catch (error) {
+      console.error('Error adding tasting:', error);
+      res.status(500).json({ error: 'Internal server error.' });
+    }
   }
 
   async getTasters(req, res) {
-      const tasters = await tastingService.getTasters(req.user.id);
-      res.json(tasters);
-
-  }
-
-  async updateTasting(req, res) {
-      const newTasting = await tastingService.updateTasting(req.params.tasting_id, req.user.id, req.body);
-      res.json({ newTasting });
-
+    const tasters = await tastingService.getTasters(req.user.id);
+    res.json(tasters);
   }
 
   async deleteTasting(req, res) {
-      await tastingService.deleteTasting(req.params.tasting_id, req.user.id);
-      res.json({ message: 'Tasting deleted' });
-
+    await tastingService.deleteTasting(req.params.tasting_id, req.user.id);
+    res.json({ message: 'Tasting deleted' });
   }
 
-  async uploadImage(req, res) {
-    upload.single('image')(req, res, async (err) => {
-      if (err) return res.status(400).json({ error: err.message });
-      if (!req.file) return res.status(400).json({ message: 'No file uploaded' });
+  // New method to retrieve a specific image for a tasting
+  async getTastingImage(req, res) {
+    console.log('Get tasting image');
+    try {
+      const tastingId = req.params.tasting_id;
+      console.log('Tasting ID:', tastingId);
 
-      try {
-        await tastingService.uploadImage(req.params.tasting_id, req.user.id, req.file.path);
-        res.json({ message: 'Image uploaded', imagePath: req.file.path });
-      } catch (error) {
-        res.status(400).json({ error: error.message });
+      // Fetch the image record from the database
+      const tasting = await tastingService.getTastingById(tastingId);
+
+      if (!tasting) {
+        return res.status(404).json({ error: 'Tasting not found.' });
       }
-    });
-  }
 
-  async getTastingImages(req, res) {
-      const images = await tastingService.getTastingImages(req.params.tasting_id);
-      res.json(images);
+      const image = await tastingService.getImageByTastingId(tastingId);
 
+      if (tasting.user_id !== req.user.id) {
+        return res
+          .status(403)
+          .json({ error: 'Forbidden: You do not have access to this image.' });
+      }
+
+      console.log(image);
+      // Construct the absolute path to the image
+      const imagePath = path.join(process.env.IMAGE_PATH, image.image_path);
+
+      // Check if the file exists
+      await fs.access(imagePath).catch(() => {
+        throw new Error('File does not exist.');
+      });
+
+      // Send the image file
+      res.sendFile(imagePath);
+    } catch (error) {
+      console.error('Error retrieving image:', error);
+      if (error.message === 'File does not exist.') {
+        return res
+          .status(404)
+          .json({ error: 'Image file not found on server.' });
+      }
+      res.status(500).json({ error: 'Internal server error.' });
+    }
   }
 }
 

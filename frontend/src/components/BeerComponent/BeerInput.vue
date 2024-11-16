@@ -58,7 +58,8 @@ onMounted(async () => {
 watch(
   () => selectedCompany,
   async (newCompany) => {
-    if (newCompany.value) {
+    // only for positive value because negative values are new companies
+    if (newCompany.value && newCompany.value.value > 0) {
       const response = await axios.get('/api/beers', {
         params: { company_id: newCompany.value.value },
       });

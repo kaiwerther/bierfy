@@ -5,31 +5,35 @@ import db from '../models/index.js';
 
 class AuthService {
   async register(data) {
-    const existingUserByEmail = await db.User.findOne({ where: { email: data.email } })
+    const existingUserByEmail = await db.User.findOne({
+      where: { email: data.email },
+    });
     if (existingUserByEmail) {
-      throw new Error('Email is already registered')
+      throw new Error('Email is already registered');
     }
 
     // Check for existing username
-    const existingUserByUsername = await db.User.findOne({ where: { username: data.username } })
+    const existingUserByUsername = await db.User.findOne({
+      where: { username: data.username },
+    });
     if (existingUserByUsername) {
-      throw new Error('Username is already taken')
+      throw new Error('Username is already taken');
     }
 
     const hashedPassword = await bcrypt.hash(data.password, 10);
     const user = await db.User.create({
       username: data.username,
       email: data.email,
-      password: hashedPassword
+      password: hashedPassword,
     });
 
-
-    
     return user;
   }
 
   async login(email, password) {
-    const user = await db.User.scope('withSensitiveData').findOne({ where: { email } });
+    const user = await db.User.scope('withSensitiveData').findOne({
+      where: { email },
+    });
     if (!user || !user.password) {
       throw new Error('Invalid credentials');
     }
@@ -51,28 +55,28 @@ class AuthService {
         email: user.email,
         is_pro: user.is_pro,
       },
-    }
+    };
   }
 
   async findOrCreateGoogleUser(profile) {
-    const email = profile.emails[0].value
+    const email = profile.emails[0].value;
 
     // Find user by Google ID
-    let user = await db.User.findOne({ where: { google_id: profile.id } })
+    let user = await db.User.findOne({ where: { google_id: profile.id } });
 
     if (user) {
       // User already exists with this Google ID
-      return { user, merged: false }
+      return { user, merged: false };
     }
 
     // Find user by email
-    const existingUser = await db.User.findOne({ where: { email } })
+    const existingUser = await db.User.findOne({ where: { email } });
 
     if (existingUser) {
       // Merge accounts
-      existingUser.google_id = profile.id
-      await existingUser.save()
-      return { user: existingUser, merged: true }
+      existingUser.google_id = profile.id;
+      await existingUser.save();
+      return { user: existingUser, merged: true };
     }
 
     // Create new user
@@ -80,9 +84,9 @@ class AuthService {
       username: profile.displayName,
       email,
       google_id: profile.id,
-    })
+    });
 
-    return { user, merged: false }
+    return { user, merged: false };
   }
 }
 export default new AuthService();

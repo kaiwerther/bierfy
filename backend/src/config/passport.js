@@ -15,16 +15,16 @@ passport.use(
     },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
-        const { user, merged } = await authService.findOrCreateGoogleUser(profile)
-        req.userData = { user, merged } // Attach userData to req
-        done(null, user)
+        const { user, merged } =
+          await authService.findOrCreateGoogleUser(profile);
+        req.userData = { user, merged }; // Attach userData to req
+        done(null, user);
       } catch (error) {
-        done(error, null)
+        done(error, null);
       }
     }
   )
-)
-
+);
 
 // Serialize and deserialize user instances to and from the session.
 passport.serializeUser((user, done) => {

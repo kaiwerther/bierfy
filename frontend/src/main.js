@@ -8,7 +8,7 @@ import axios from 'axios';
 import { createPinia } from 'pinia';
 import { useUserStore } from './stores/user';
 import 'bootstrap';
-
+import 'cropperjs/dist/cropper.css';
 import './fontawesomeLibrary';
 
 // import fontawesome icon globally

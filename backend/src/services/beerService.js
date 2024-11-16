@@ -35,9 +35,15 @@ class BeerService {
   }
 
   async addBeer(companyId, name, createdBy) {
-    let beer = await db.Beer.findOne({ where: { company_id: companyId, name } });
+    let beer = await db.Beer.findOne({
+      where: { company_id: companyId, name },
+    });
     if (!beer) {
-      beer = await db.Beer.create({ company_id: companyId, name, created_by: createdBy });
+      beer = await db.Beer.create({
+        company_id: companyId,
+        name,
+        created_by: createdBy,
+      });
     }
     return beer;
   }
@@ -47,15 +53,20 @@ class BeerService {
       attributes: [
         'id',
         'name',
-        [db.Sequelize.fn('AVG', db.Sequelize.col('Tastings.rating')), 'average_rating']
+        [
+          db.Sequelize.fn('AVG', db.Sequelize.col('Tastings.rating')),
+          'average_rating',
+        ],
       ],
-      include: [{
-        model: db.Tasting,
-        attributes: [],
-        where: { is_rating_public: true },
-        required: false
-      }],
-      group: ['Beer.id']
+      include: [
+        {
+          model: db.Tasting,
+          attributes: [],
+          where: { is_rating_public: true },
+          required: false,
+        },
+      ],
+      group: ['Beer.id'],
     });
   }
 
@@ -67,13 +78,15 @@ class BeerService {
     const ratings = await db.Tasting.findAll({
       where: {
         beer_id: beerId,
-        is_rating_public: true
+        is_rating_public: true,
       },
-      include: [{
-        model: db.User,
-        attributes: ['username']
-      }],
-      attributes: ['rating', 'notes']
+      include: [
+        {
+          model: db.User,
+          attributes: ['username'],
+        },
+      ],
+      attributes: ['rating', 'notes'],
     });
     return { beer, ratings };
   }

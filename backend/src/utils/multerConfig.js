@@ -1,35 +1,49 @@
-// src/utils/multerConfig.js
+// src/middleware/upload.js
+
 import multer from 'multer';
 import path from 'path';
+import fs from 'fs';
 
-// Set Storage Engine
+// Define storage settings
 const storage = multer.diskStorage({
-  destination: './uploads/',
-  filename: (req, file, cb) => {
-    cb(null, 'IMAGE-' + Date.now() + path.extname(file.originalname));
+  destination: function (req, file, cb) {
+    const uploadPath = path.join(process.env.IMAGE_PATH);
+
+    // Create the uploads directory if it doesn't exist
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+
+    cb(null, uploadPath);
+  },
+  filename: function (req, file, cb) {
+    // Generate a unique filename using timestamp and original name
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+    const ext = path.extname(file.originalname);
+    cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
   },
 });
 
-// Check File Type
-function checkFileType(file, cb) {
-  // Allowed extensions
-  const filetypes = /jpeg|jpg|png/;
-  // Check extension
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  // Check MIME type
-  const mimetype = filetypes.test(file.mimetype);
+// File filter to accept only image files
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = /jpeg|jpg|png|gif/;
+  const extname = allowedTypes.test(
+    path.extname(file.originalname).toLowerCase()
+  );
+  const mimetype = allowedTypes.test(file.mimetype);
 
-  if (mimetype && extname) return cb(null, true);
-  cb(new Error('Images only!'));
-}
+  if (extname && mimetype) {
+    return cb(null, true);
+  } else {
+    cb(new Error('Only images are allowed (jpeg, jpg, png, gif).'));
+  }
+};
 
-// Initialize Upload
+// Initialize multer with defined settings
 const upload = multer({
-  storage,
-  limits: { fileSize: 1000000 }, // 1MB limit
-  fileFilter: (req, file, cb) => {
-    checkFileType(file, cb);
-  },
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB file size limit
+  fileFilter: fileFilter,
 });
 
 export default upload;

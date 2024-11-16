@@ -23,59 +23,7 @@
           :key="tasting.id"
           class="col-sm-6 col-lg-4 mb-4"
         >
-          <div class="card h-100 shadow-sm">
-            <img
-              :src="tasting.image || 'beer.webp'"
-              class="card-img-top tasting-image"
-              :alt="tasting.Beer.name"
-            />
-            <div class="card-body d-flex flex-column">
-              <h5 class="card-title text-primary">
-                <font-awesome-icon icon="beer" />
-                {{ tasting.Beer.Company.name }}
-                {{ tasting.Beer.name }}
-              </h5>
-              <p class="card-text text-muted">
-                {{ formatDate(tasting.created_at) }}
-              </p>
-
-              <div class="mb-2 d-flex justify-content-between">
-                <strong>Average Rating:</strong>
-                <strong
-                  >{{ averageRating(tasting) }} / 10
-                  <font-awesome-icon
-                    :icon="['fas', 'star']"
-                    class="text-warning"
-                /></strong>
-              </div>
-
-              <div
-                v-for="(tastingRating, i) in tasting.TastingRatings"
-                :key="i"
-                class="ms-1 d-flex justify-content-between"
-              >
-                <div>{{ tastingRating.taster }}</div>
-
-                <div>
-                  {{ tastingRating.rating }} / 10
-                  <font-awesome-icon
-                    :icon="['fas', 'star']"
-                    class="text-warning"
-                  />
-                </div>
-              </div>
-
-              <p class="card-text flex-grow-1">{{ tasting.notes }}</p>
-              <div class="mt-auto d-flex justify-content-end">
-                <button
-                  class="btn btn-outline-danger btn-sm"
-                  @click="deleteTasting(tasting.id)"
-                >
-                  <font-awesome-icon icon="trash" class="me-1" /> Delete
-                </button>
-              </div>
-            </div>
-          </div>
+          <TastingCard :tasting="tasting" @delete="deleteTasting(tasting)" />
         </div>
       </div>
     </div>
@@ -95,7 +43,8 @@
 import { ref, onMounted } from 'vue';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-import FloatingAddButton from './FloatingAddButton.vue'; // Import the new component
+import FloatingAddButton from './FloatingAddButton.vue';
+import TastingCard from './TastingCard.vue';
 
 // Loading state
 const isLoading = ref(true);
@@ -116,32 +65,15 @@ const fetchTastings = async () => {
   }
 };
 
-const averageRating = (tasting) => {
-  const totalRating = tasting.TastingRatings.reduce(
-    (acc, rating) => acc + rating.rating,
-    0
-  );
-  return (totalRating / tasting.TastingRatings.length).toFixed(1);
-};
-
-// Format date utility
-const formatDate = (dateString) => {
-  const options = { year: 'numeric', month: 'short', day: 'numeric' };
-  return new Date(dateString).toLocaleDateString(undefined, options);
-};
-
-// Open edit form (implementation pending)
-const openEditForm = () => {
-  // Implement the logic for editing a tasting, e.g., open a modal
-  // isFormOpen.value = true;
-};
-
 // Delete a tasting
 const deleteTasting = async (tastingId) => {
   if (confirm('Are you sure you want to delete this tasting?')) {
     try {
       await axios.delete(`/api/tastings/${tastingId}`);
-      fetchTastings();
+      // remove from tastings
+      tastings.value = tastings.value.filter(
+        (tasting) => tasting.id !== tastingId
+      );
     } catch (error) {
       console.error('Error deleting tasting:', error);
     }

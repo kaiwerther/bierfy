@@ -19,9 +19,9 @@ const sequelize = new Sequelize(
 const models = {};
 
 async function loadModels() {
-  const files = fs.readdirSync(__dirname).filter(
-    (file) => file !== 'index.js' && file.slice(-3) === '.js'
-  );
+  const files = fs
+    .readdirSync(__dirname)
+    .filter((file) => file !== 'index.js' && file.slice(-3) === '.js');
 
   for (const file of files) {
     const filePath = path.join(__dirname, file);

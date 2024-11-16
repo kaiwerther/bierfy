@@ -12,7 +12,6 @@ import 'express-async-errors';
 import authRoutes from './routes/authRoutes.js';
 import beerRoutes from './routes/beerRoutes.js';
 import tastingRoutes from './routes/tastingRoutes.js';
-import paymentRoutes from './routes/paymentRoutes.js';
 
 import passport from './config/passport.js';
 
@@ -34,14 +33,12 @@ app.use(express.json());
 // Routes with JWT Authentication Middleware
 app.use(passport.initialize());
 
-
 app.use('/uploads', express.static('uploads'));
 
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/beers', beerRoutes);
 app.use('/api/tastings', tastingRoutes);
-app.use('/api/payments', paymentRoutes);
 
 // Global Error Handler
 app.use((err, req, res, _next) => {
