@@ -38,7 +38,9 @@ const router = createRouter({
 // Navigation Guard for Protected Routes
 router.beforeEach((to, from, next) => {
   const userStore = useUserStore();
-  if (to.meta.requiresAuth && !userStore.token) {
+  const isAuthenticated = !!userStore.token;
+
+  if (to.meta.requiresAuth && !isAuthenticated) {
     next('/login');
   } else {
     next();

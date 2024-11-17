@@ -61,6 +61,8 @@
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
+import { useToast } from 'vue-toastification';
+const toast = useToast();
 
 const email = ref('');
 const password = ref('');
@@ -87,6 +89,11 @@ const loginWithGoogle = () => {
 
 onMounted(() => {
   // Check for error message in query params
+  if (userStore.user) {
+    toast.success('Already logged in :)');
+    router.push('/tastings');
+  }
+  console.log(userStore.user);
   if (route.query.error) {
     error.value = route.query.error;
   }

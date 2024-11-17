@@ -12,6 +12,8 @@ import {
   faTimesCircle,
   faExpand,
   faCompress,
+  faUpload,
+  faCamera,
 } from '@fortawesome/free-solid-svg-icons';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 
@@ -27,5 +29,7 @@ library.add(
   faWarehouse,
   faTimesCircle,
   faExpand,
-  faCompress
+  faCompress,
+  faUpload,
+  faCamera
 );

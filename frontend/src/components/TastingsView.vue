@@ -45,7 +45,8 @@ import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 import FloatingAddButton from './FloatingAddButton.vue';
 import TastingCard from './TastingCard.vue';
-
+import { useToast } from 'vue-toastification';
+const toast = useToast();
 // Loading state
 const isLoading = ref(true);
 
@@ -74,6 +75,7 @@ const deleteTasting = async (tastingId) => {
       tastings.value = tastings.value.filter(
         (tasting) => tasting.id !== tastingId
       );
+      toast.success('Tasting deleted successfully');
     } catch (error) {
       console.error('Error deleting tasting:', error);
     }

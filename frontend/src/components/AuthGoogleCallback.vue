@@ -14,6 +14,8 @@
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import { useUserStore } from '../stores/user';
+import { useToast } from 'vue-toastification';
+const toast = useToast();
 
 const router = useRouter();
 const route = useRoute();
@@ -29,6 +31,7 @@ onMounted(() => {
     const redirectDelay = merged.value ? 3000 : 0;
     setTimeout(() => {
       router.push('/tastings');
+      toast.success("You're now logged in!");
     }, redirectDelay);
   } else {
     router.push('/login');

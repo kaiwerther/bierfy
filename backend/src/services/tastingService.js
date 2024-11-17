@@ -1,5 +1,7 @@
 // src/services/tastingService.js
 import db from '../models/index.js';
+import path from 'path'; // For handling file paths
+import fs from 'fs/promises'; // For asynchronous file operations
 
 class TastingService {
   async getUserTastings(userId) {
@@ -114,11 +116,47 @@ class TastingService {
   }
 
   async deleteTasting(tastingId, userId) {
-    const deleted = await db.Tasting.destroy({
-      where: { id: tastingId, user_id: userId },
-    });
-    if (!deleted) {
-      throw new Error('Tasting not found or unauthorized');
+    // Start a transaction to ensure data consistency
+    const transaction = await db.sequelize.transaction();
+
+    try {
+      // Fetch the tasting along with the associated image
+      const tasting = await db.Tasting.findOne({
+        where: { id: tastingId, user_id: userId },
+        include: { model: db.Image },
+      });
+
+      if (!tasting) {
+        throw new Error('Tasting not found or unauthorized');
+      }
+
+      // If there is an associated image, delete it from the filesystem
+      if (tasting.Image) {
+        const imagePath = path.join(
+          process.env.IMAGE_PATH,
+          tasting.Image.image_path
+        );
+        await fs.unlink(imagePath).catch((err) => {
+          console.error(`Error deleting image file: ${err.message}`);
+          throw err;
+        });
+
+        // Delete the image record from the database should be done with cascade
+      }
+
+      // Delete the tasting record
+      await db.Tasting.destroy({
+        where: { id: tastingId, user_id: userId },
+        transaction,
+      });
+
+      // Commit the transaction
+      await transaction.commit();
+    } catch (error) {
+      // Rollback the transaction in case of error
+      console.error(error);
+      await transaction.rollback();
+      throw error;
     }
   }
 

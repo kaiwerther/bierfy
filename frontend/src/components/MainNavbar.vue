@@ -2,7 +2,15 @@
 <template>
   <nav class="navbar navbar-expand-lg navbar-light bg-light">
     <div class="container-fluid">
-      <router-link class="navbar-brand fancy-text" to="/">Bierfy</router-link>
+      <router-link
+        v-if="isAuthenticated"
+        class="navbar-brand fancy-text"
+        to="/tastings"
+        >Bierfy</router-link
+      >
+      <router-link v-else class="navbar-brand fancy-text" to="/"
+        >Bierfy</router-link
+      >
       <button
         class="navbar-toggler"
         type="button"

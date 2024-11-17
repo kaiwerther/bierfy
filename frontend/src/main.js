@@ -10,6 +10,8 @@ import { useUserStore } from './stores/user';
 import 'bootstrap';
 import 'cropperjs/dist/cropper.css';
 import './fontawesomeLibrary';
+import Toast from 'vue-toastification';
+import 'vue-toastification/dist/index.css';
 
 // import fontawesome icon globally
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
@@ -41,6 +43,9 @@ async function bootstrap() {
   const app = createApp(App);
   app.use(router);
   app.use(pinia);
+  app.use(Toast, {
+    //additional options
+  });
   app.component('FontAwesomeIcon', FontAwesomeIcon);
 
   const userStore = useUserStore();

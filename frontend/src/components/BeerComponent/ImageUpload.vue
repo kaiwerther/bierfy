@@ -1,17 +1,33 @@
-<!-- ImageUploadCrop.vue -->
 <template>
   <div class="card">
     <div class="card-body">
-      <!-- Upload Button -->
+      <!-- Upload Buttons -->
       <div v-if="!imageData" class="text-center">
-        <label class="btn btn-primary btn-lg" for="imageInput">
-          <i class="fas fa-upload me-2"></i> Select Image
-        </label>
+        <!-- Take Photo Button (Visible only on Mobile) -->
+        <button
+          type="button"
+          class="btn btn-primary btn-lg d-md-none me-2"
+          for="cameraInput"
+        >
+          <font-awesome-icon icon="camera" class="me-2" /> Take Photo
+        </button>
         <input
-          id="imageInput"
+          id="cameraInput"
           type="file"
           accept="image/*"
           capture="environment"
+          class="d-none"
+          @change="onFileChange"
+        />
+
+        <!-- Choose from Files Button (Visible on All Devices) -->
+        <label class="btn btn-secondary btn-lg" for="fileInput">
+          <font-awesome-icon icon="upload" class="me-2" /> Choose from Files
+        </label>
+        <input
+          id="fileInput"
+          type="file"
+          accept="image/*"
           class="d-none"
           @change="onFileChange"
         />
@@ -82,6 +98,8 @@
 import { ref } from 'vue';
 import Cropper from 'vue-cropperjs';
 import 'cropperjs/dist/cropper.css';
+import { useToast } from 'vue-toastification';
+const toast = useToast();
 
 // Reactive References
 const cropper = ref(null);
@@ -106,11 +124,15 @@ const onFileChange = (event) => {
       imageData.value = e.target.result;
       croppedImage.value = null; // Reset cropped image
       currentZoom = 1; // Reset zoom level
-      cropper.value.cropper.reset(); // Reset Cropper to initial state
+      if (cropper.value && cropper.value.cropper) {
+        cropper.value.cropper.reset(); // Reset Cropper to initial state
+      }
     };
     reader.readAsDataURL(file);
   } else {
-    alert('Please select a valid image file.');
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select a valid image file.', { duration: 3000 });
+    }
   }
 };
 
@@ -179,4 +201,24 @@ const emitCroppedImage = (dataUrl) => {
 };
 </script>
 
-<style scoped></style>
+<style scoped>
+.cropper-wrapper {
+  width: 100%;
+  height: 100%;
+}
+
+.preview-container {
+  width: 100%;
+  padding-top: 100%; /* 1:1 Aspect Ratio */
+  position: relative;
+}
+
+.preview-container img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+</style>
