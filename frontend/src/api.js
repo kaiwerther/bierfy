@@ -55,6 +55,7 @@ export default {
     return apiClient.get('/api/companies');
   },
   addCompany(name) {
+    // Ensure this method exists
     return apiClient.post('/api/companies', { name });
   },
   fetchBeers(companyId) {
@@ -63,8 +64,17 @@ export default {
     });
   },
   addBeer(name, companyId) {
+    // Ensure this method exists
     return apiClient.post('/api/beers', { name, company_id: companyId });
   },
-
-  // Other API methods...
+  // External APIs
+  fetchCoordinates(address) {
+    // New method for fetching coordinates
+    return axios.get('https://nominatim.openstreetmap.org/search', {
+      params: {
+        q: address,
+        format: 'json',
+      },
+    });
+  },
 };

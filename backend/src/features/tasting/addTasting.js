@@ -106,10 +106,16 @@ async function addTastingService(data) {
           model: db.TastingRating,
           attributes: ['taster', 'rating'],
         },
+        { model: db.Image, attributes: ['image_path'] },
       ],
     });
 
-    return createdTasting;
+    // Remove Image property and replace with hasImage true/false
+    return {
+      ...createdTasting.toJSON(),
+      hasImage: !!createdTasting.Image,
+      Image: undefined,
+    };
   } catch (error) {
     // Rollback the transaction in case of error
     console.error(error);

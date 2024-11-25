@@ -1,3 +1,4 @@
+<!-- src/components/TastingAdd.vue -->
 <template>
   <div class="container mt-5">
     <h2 class="mb-4">Add New Tasting</h2>
@@ -9,7 +10,7 @@
       </div>
       <!-- Rating -->
       <div class="mb-3">
-        <label for="beer" class="form-label">Ratings</label>
+        <label class="form-label">Ratings</label>
         <RatingInput v-model="tastings" :error="ratingError" />
       </div>
       <!-- Image Upload -->
@@ -50,18 +51,20 @@
 
 <script setup>
 import { ref, watch, onMounted } from 'vue';
-import axios from 'axios';
-import L from 'leaflet'; // Leaflet for maps
-import 'leaflet/dist/leaflet.css';
 import { useRouter } from 'vue-router';
+import { useTastingsStore } from '../stores/tastings';
+import { useLeaflet } from '../composables/useLeaflet'; // Import the composable
 import BeerInput from './BeerComponent/BeerInput.vue';
 import RatingInput from './BeerComponent/RatingInput.vue';
 import ImageUpload from './BeerComponent/ImageUpload.vue';
+import api from '../api';
 
 const beerError = ref(false);
 const ratingError = ref(false);
 const locationError = ref('');
 const router = useRouter();
+const store = useTastingsStore();
+
 const selectedBeer = ref(null); // Holds the selected beer object
 const tastings = ref([]);
 const imageData = ref(null);
@@ -70,8 +73,10 @@ const error = ref('');
 // Location state
 const latitude = ref(null);
 const longitude = ref(null);
-const map = ref(null); // Leaflet map instance
 const customAddress = ref(''); // Custom address input
+
+// Initialize Leaflet map using the composable
+const { initializeMap, updateMarker } = useLeaflet('map');
 
 // Fetch location on mount
 onMounted(() => {
@@ -93,42 +98,16 @@ onMounted(() => {
   );
 });
 
-// Initialize the map
-const initializeMap = (lat, lng) => {
-  if (map.value) {
-    map.value.setView([lat, lng], 13);
-    return;
-  }
-
-  map.value = L.map('map').setView([lat, lng], 13);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-  }).addTo(map.value);
-
-  const marker = L.marker([lat, lng]).addTo(map.value);
-  watch([latitude, longitude], () => {
-    marker.setLatLng([latitude.value, longitude.value]);
-  });
-};
-
 // Fetch coordinates from the custom address
 const fetchCoordinatesFromAddress = async () => {
   try {
-    const response = await axios.get(
-      'https://nominatim.openstreetmap.org/search',
-      {
-        params: {
-          q: customAddress.value,
-          format: 'json',
-        },
-      }
-    );
+    const response = await api.fetchCoordinates(customAddress.value);
 
     if (response.data.length > 0) {
       const location = response.data[0];
       latitude.value = parseFloat(location.lat);
       longitude.value = parseFloat(location.lon);
-      initializeMap(latitude.value, longitude.value);
+      updateMarker(latitude.value, longitude.value);
     } else {
       alert('Address not found. Please try a different one.');
     }
@@ -138,7 +117,7 @@ const fetchCoordinatesFromAddress = async () => {
   }
 };
 
-// Reset error booleans when value changes
+// Reset error booleans when values change
 watch(selectedBeer, () => {
   error.value = '';
   beerError.value = false;
@@ -149,6 +128,7 @@ watch(tastings, () => {
 });
 
 const handleSubmit = async () => {
+  // Validation
   if (!selectedBeer.value?.beer?.id) {
     error.value = 'Please select a beer.';
     beerError.value = true;
@@ -167,26 +147,25 @@ const handleSubmit = async () => {
     const beer = selectedBeer.value.beer;
     const company = selectedBeer.value.company;
 
+    // Add company if it's a new one
     if (company.id < 0) {
-      const response = await axios.post('/api/beers/companies', {
-        name: company.name,
-      });
+      const response = await api.addCompany(company.name);
       company.id = response.data.id;
     }
 
+    // Add beer if it's a new one
     if (beer.id < 0) {
-      const response = await axios.post('/api/beers', {
-        name: beer.name,
-        company_id: company.id,
-      });
+      const response = await api.addBeer(beer.name, company.id);
       beer.id = response.data.id;
     }
 
+    // Transform ratings
     const transformedRatings = filteredTastings.map((tasting) => ({
       taster: tasting.taster.label,
       rating: tasting.rating,
     }));
 
+    // Prepare form data
     const formData = new FormData();
     formData.append('beer_id', beer.id);
     formData.append('ratings', JSON.stringify(transformedRatings));
@@ -201,11 +180,10 @@ const handleSubmit = async () => {
       );
     }
 
-    await axios.post('/api/tastings', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
-    });
+    // Add tasting via the store
+    await store.addTasting(formData);
+
+    // Redirect after successful addition
     router.push('/tastings/list');
   } catch (err) {
     console.error('Error adding tasting:', err);
@@ -215,6 +193,7 @@ const handleSubmit = async () => {
   }
 };
 
+// Utility to convert DataURL to File
 const convertDataURLToFile = (dataURL, filename) => {
   const arr = dataURL.split(',');
   const mime = arr[0].match(/:(.*?);/)[1];
@@ -229,6 +208,7 @@ const convertDataURLToFile = (dataURL, filename) => {
   return new File([u8arr], filename, { type: mime });
 };
 
+// Cancel and navigate back
 const cancel = () => {
   router.push('/tastings/list');
 };

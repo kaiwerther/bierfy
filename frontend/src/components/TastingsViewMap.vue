@@ -1,45 +1,37 @@
 <!-- src/components/TastingsViewMap.vue -->
 <template>
   <div class="container mt-5">
-    <TastingsHeader title="My Tastings Map" icon="map-marked-alt" />
-
-    <!-- Loading Indicator -->
-    <div v-if="isLoading" class="d-flex justify-content-center my-5">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-    </div>
+    <TastingsHeader title="My Tastings Map" icon="map-marker-alt" />
 
     <!-- Map Container -->
-    <div v-else id="tastings-map" class="map-container"></div>
+    <div id="tastings-map" class="map-container"></div>
+
+    <FloatingAddButton />
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch } from 'vue';
+import { onMounted, watch } from 'vue';
 import { useTastingsStore } from '../stores/tastings';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { useLeaflet } from '../composables/useLeaflet';
 import TastingsHeader from './TastingsHeader.vue';
 import { storeToRefs } from 'pinia';
-import api from '../api'; // Don't forget to import api if needed
+import api from '../api'; // Ensure api.js is correctly set up
+import FloatingAddButton from './FloatingAddButton.vue';
 
 const tastingsStore = useTastingsStore();
 const { tastings, isLoading } = storeToRefs(tastingsStore);
 const { fetchTastings } = tastingsStore;
-const map = ref(null);
 
-const initializeMap = () => {
-  if (map.value) {
-    map.value.remove();
-  }
+// Initialize Leaflet using the composable
+const { initializeMap, addMarker, clearMarkers } = useLeaflet('tastings-map');
 
-  map.value = L.map('tastings-map').setView([51.1657, 10.4515], 5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-  }).addTo(map.value);
-};
-
+/**
+ * Creates popup content for a tasting.
+ *
+ * @param {Object} tasting - The tasting object.
+ * @returns {HTMLElement} - The popup content element.
+ */
 const createPopupContent = async (tasting) => {
   const popupDiv = document.createElement('div');
   popupDiv.classList.add('popup-card');
@@ -57,10 +49,10 @@ const createPopupContent = async (tasting) => {
       img.src = imageUrl;
     } catch (error) {
       console.error('Error fetching tasting image:', error);
-      img.src = '/default-image-path.jpg';
+      img.src = '/default-image-path.jpg'; // Ensure this path is correct
     }
   } else {
-    img.src = '/default-image-path.jpg';
+    img.src = '/default-image-path.jpg'; // Ensure this path is correct
   }
 
   const h5 = document.createElement('h5');
@@ -90,52 +82,48 @@ const createPopupContent = async (tasting) => {
   return popupDiv;
 };
 
-const createMarkers = () => {
-  tastings.value.forEach((tasting) => {
-    if (tasting.latitude && tasting.longitude) {
-      const marker = L.marker([tasting.latitude, tasting.longitude]).addTo(
-        map.value
-      );
+/**
+ * Creates markers on the map for each tasting.
+ */
+const createMarkers = async () => {
+  // Clear existing markers to avoid duplicates
+  clearMarkers();
 
-      createPopupContent(tasting).then((popupContent) => {
-        marker.bindPopup(popupContent, {
-          maxWidth: 300,
-          className: 'tasting-popup',
-        });
+  // Iterate over each tasting and add a marker if it has valid coordinates
+  for (const tasting of tastings.value) {
+    if (tasting.latitude && tasting.longitude) {
+      const marker = addMarker(tasting.latitude, tasting.longitude);
+
+      // Create popup content and bind to marker
+      const popupContent = await createPopupContent(tasting);
+      marker.bindPopup(popupContent, {
+        maxWidth: 300,
+        className: 'tasting-popup',
       });
     }
-  });
+  }
 };
 
 onMounted(async () => {
-  initializeMap();
+  initializeMap(51.1657, 10.4515, 5); // Initialize map centered over Germany
+
   if (!tastings.value.length) {
     await fetchTastings();
   }
-  createMarkers();
+
+  await createMarkers();
 });
 
+// Watch for changes in tastings and update markers accordingly
 watch(
-  () => tastings.value,
-  () => {
-    if (map.value) {
-      // Remove existing markers
-      map.value.eachLayer((layer) => {
-        if (layer instanceof L.Marker) {
-          map.value.removeLayer(layer);
-        }
-      });
-      createMarkers();
+  tastings,
+  async () => {
+    if (!isLoading.value) {
+      await createMarkers();
     }
-  }
+  },
+  { deep: true }
 );
-
-onBeforeUnmount(() => {
-  if (map.value) {
-    map.value.remove();
-    map.value = null;
-  }
-});
 </script>
 
 <style scoped>
@@ -175,11 +163,11 @@ onBeforeUnmount(() => {
   margin-bottom: 5px;
 }
 
-.tasting-popup :deep(.popup-card) {
+.tasting-popup .popup-card {
   width: 250px;
 }
 
-.tasting-popup :deep(.popup-image) {
+.tasting-popup .popup-image {
   width: 100%;
   height: auto;
   border-radius: 5px;

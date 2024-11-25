@@ -9,15 +9,7 @@
   </router-link>
 </template>
 
-<script setup>
-// If FontAwesome is not globally registered, import the necessary icons here
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
-// import the 'plus' icon
-import { faPlus } from '@fortawesome/free-solid-svg-icons';
-// Add the icon to the library if not already done globally
-// import { library } from '@fortawesome/fontawesome-svg-core';
-// library.add(faPlus);
-</script>
+<script setup></script>
 
 <style scoped>
 .floating-button {

@@ -12,6 +12,7 @@ import 'cropperjs/dist/cropper.css';
 import './fontawesomeLibrary';
 import Toast from 'vue-toastification';
 import 'vue-toastification/dist/index.css';
+import 'leaflet/dist/leaflet.css';
 
 // import fontawesome icon globally
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
