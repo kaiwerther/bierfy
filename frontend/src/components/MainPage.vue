@@ -14,6 +14,13 @@
       <p v-if="isLoggedIn" class="lead mb-5">
         You are already logged in. Redirecting to your tastings...
       </p>
+      <div v-if="isLoggedIn" class="progress w-50">
+        <div
+          class="progress-bar progress-bar-striped progress-bar-animated"
+          role="progressbar"
+          :style="{ width: progressBarWidth + '%' }"
+        ></div>
+      </div>
       <router-link v-else to="/login" class="btn btn-primary btn-lg"
         >Login</router-link
       >
@@ -22,7 +29,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted } from 'vue';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 import { useRouter } from 'vue-router';
 import { useUserStore } from '../stores/user';
 
@@ -30,16 +37,24 @@ const userStore = useUserStore();
 const router = useRouter();
 
 let redirectTimeout = null;
+const progressBarWidth = ref(0);
 
 // Computed property to check if the user is logged in
 const isLoggedIn = computed(() => !!userStore.user.username);
 
 onMounted(() => {
   if (isLoggedIn.value) {
+    const interval = setInterval(() => {
+      progressBarWidth.value += 1.67; // Increase by 1.67% every 50ms to reach 100% in 3 seconds
+      if (progressBarWidth.value >= 100) {
+        clearInterval(interval);
+      }
+    }, 50);
+
     // Redirect after 3 seconds (3000 milliseconds)
-    setTimeout(() => {
-      router.push('/tastings');
-    }, 2000);
+    redirectTimeout = setTimeout(() => {
+      router.push('/tastings/list');
+    }, 3000);
   }
 });
 
@@ -51,4 +66,7 @@ onUnmounted(() => {
 
 <style scoped>
 /* You can add custom styles here if needed */
+.progress {
+  height: 20px;
+}
 </style>

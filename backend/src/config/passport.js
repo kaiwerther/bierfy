@@ -1,10 +1,9 @@
 // src/config/passport.js
 import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import authService from '../services/authService.js';
+import { findOrCreateGoogleUser } from '../features/auth/googleAuthService.js';
 import db from '../models/index.js';
 
-// src/config/passport.js
 passport.use(
   new GoogleStrategy(
     {
@@ -15,8 +14,7 @@ passport.use(
     },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
-        const { user, merged } =
-          await authService.findOrCreateGoogleUser(profile);
+        const { user, merged } = await findOrCreateGoogleUser(profile);
         req.userData = { user, merged }; // Attach userData to req
         done(null, user);
       } catch (error) {

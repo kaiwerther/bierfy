@@ -14,6 +14,7 @@ import {
   faCompress,
   faUpload,
   faCamera,
+  faMapMarkerAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import { faStar as farStar } from '@fortawesome/free-regular-svg-icons';
 
@@ -31,5 +32,6 @@ library.add(
   faExpand,
   faCompress,
   faUpload,
-  faCamera
+  faCamera,
+  faMapMarkerAlt
 );

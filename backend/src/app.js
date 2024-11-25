@@ -1,17 +1,16 @@
 // src/app.js
 import 'dotenv/config';
-
 import express from 'express';
-
 import cors from 'cors';
 import compression from 'compression';
 import helmet from 'helmet';
 import 'express-async-errors';
 
 // Import routes
-import authRoutes from './routes/authRoutes.js';
-import beerRoutes from './routes/beerRoutes.js';
-import tastingRoutes from './routes/tastingRoutes.js';
+import authRoutes from './features/auth/index.js';
+import beerRoutes from './features/beer/index.js';
+import companyRoutes from './features/company/index.js';
+import tastingRoutes from './features/tasting/index.js'; // Updated path
 
 import passport from './config/passport.js';
 
@@ -30,15 +29,17 @@ app.use(compression());
 app.use(helmet());
 app.use(express.json());
 
-// Routes with JWT Authentication Middleware
+// Initialize Passport
 app.use(passport.initialize());
 
+// Serve Static Files
 app.use('/uploads', express.static('uploads'));
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/beers', beerRoutes);
-app.use('/api/tastings', tastingRoutes);
+// Use Routes
+app.use('/api/auth/', authRoutes);
+app.use('/api/beers/', beerRoutes);
+app.use('/api/companies/', companyRoutes);
+app.use('/api/tastings/', tastingRoutes);
 
 // Global Error Handler
 app.use((err, req, res, _next) => {
@@ -46,9 +47,8 @@ app.use((err, req, res, _next) => {
   res.status(500).json({ message: 'Internal Server Error' });
 });
 
-// Load Prompts and Start Server
+// Start Server
 try {
-  // Start the server
   app.listen(PORT, () => {
     console.log(
       `Server running on port ${PORT} for frontend at ${FRONTEND_URL}`

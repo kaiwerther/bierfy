@@ -1,12 +1,7 @@
-<!-- src/components/TastingsView.vue -->
+<!-- src/components/TastingsViewList.vue -->
 <template>
   <div class="container mt-5 mb-5">
-    <div class="header mb-5">
-      <h2 class="display-4 text-uppercase">
-        <font-awesome-icon icon="beer" />
-        My Tastings
-      </h2>
-    </div>
+    <TastingsHeader />
 
     <!-- Loading Indicator -->
     <div v-if="isLoading" class="d-flex justify-content-center my-5">
@@ -23,7 +18,10 @@
           :key="tasting.id"
           class="col-sm-6 col-lg-4 mb-4"
         >
-          <TastingCard :tasting="tasting" @delete="deleteTasting(tasting.id)" />
+          <TastingCard
+            :tasting="tasting"
+            @delete="handleDeleteTasting(tasting.id)"
+          />
         </div>
       </div>
     </div>
@@ -40,41 +38,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
-import axios from 'axios';
-import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { onMounted } from 'vue';
+import { useTastingsStore } from '../stores/tastings';
+import { useToast } from 'vue-toastification';
 import FloatingAddButton from './FloatingAddButton.vue';
 import TastingCard from './TastingCard.vue';
-import { useToast } from 'vue-toastification';
+import TastingsHeader from './TastingsHeader.vue';
+import { storeToRefs } from 'pinia';
+
 const toast = useToast();
-// Loading state
-const isLoading = ref(true);
+const tastingsStore = useTastingsStore();
+const { tastings, isLoading } = storeToRefs(tastingsStore);
+const { fetchTastings, deleteTasting } = tastingsStore;
 
-// Tastings data
-const tastings = ref([]);
-
-// Fetch tastings from the API
-const fetchTastings = async () => {
-  isLoading.value = true;
-  try {
-    const response = await axios.get('/api/tastings');
-    tastings.value = response.data;
-  } catch (error) {
-    console.error('Error fetching tastings:', error);
-  } finally {
-    isLoading.value = false;
-  }
-};
-
-// Delete a tasting
-const deleteTasting = async (tastingId) => {
+const handleDeleteTasting = async (tastingId) => {
   if (confirm('Are you sure you want to delete this tasting?')) {
     try {
-      await axios.delete(`/api/tastings/${tastingId}`);
-      // remove from tastings
-      tastings.value = tastings.value.filter(
-        (tasting) => tasting.id !== tastingId
-      );
+      await deleteTasting(tastingId);
       toast.success('Tasting deleted successfully');
     } catch (error) {
       console.error('Error deleting tasting:', error);
@@ -82,9 +62,10 @@ const deleteTasting = async (tastingId) => {
   }
 };
 
-// Fetch tastings when the component is mounted
 onMounted(() => {
-  fetchTastings();
+  if (!tastings.value.length) {
+    fetchTastings();
+  }
 });
 </script>
 

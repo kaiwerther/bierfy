@@ -1,4 +1,3 @@
-// src/models/tasting.js
 import { Model, DataTypes } from 'sequelize';
 
 class Tasting extends Model {
@@ -12,6 +11,14 @@ class Tasting extends Model {
         beer_id: {
           type: DataTypes.INTEGER,
           allowNull: false,
+        },
+        latitude: {
+          type: DataTypes.FLOAT,
+          allowNull: true,
+        },
+        longitude: {
+          type: DataTypes.FLOAT,
+          allowNull: true,
         },
       },
       {

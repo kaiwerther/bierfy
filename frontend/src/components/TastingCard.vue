@@ -1,3 +1,4 @@
+<!-- src/TastingCard.vue -->
 <template>
   <div class="card h-100 shadow-sm">
     <div class="image-container position-relative">
@@ -58,57 +59,33 @@
     </div>
   </div>
 </template>
-
 <script setup>
-import { ref, watch, computed } from 'vue';
-import axios from 'axios';
+import { watch, computed, ref } from 'vue';
+import { useTastingImage } from '../composables/useTastingImage';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-// Define emit
-const emit = defineEmits(['delete']);
-
-// Define tasting prop with its type
 const props = defineProps({
   tasting: {
     type: Object,
     required: true,
   },
 });
-const tasting = props.tasting;
+const { tasting } = props;
+const emit = defineEmits(['delete']);
 
-const deleteTasting = async () => {
-  try {
-    emit('delete', tasting);
-  } catch (error) {
-    console.error(error);
-  }
-};
+const { imageUrl, loadImage } = useTastingImage(tasting);
 
-const imageUrl = ref(null);
-
-const loadImage = async (tasting) => {
-  try {
-    if (tasting.hasImage) {
-      const response = await axios.get(`/api/tastings/${tasting.id}/image`, {
-        responseType: 'blob',
-      });
-      const url = URL.createObjectURL(response.data);
-      imageUrl.value = url;
-    } else {
-      imageUrl.value = null;
-    }
-  } catch (error) {
-    console.error('Error loading image:', error);
-  }
-};
-
-// Get image when tasting changes
 watch(
   () => tasting,
   () => {
-    loadImage(tasting);
+    loadImage();
   },
   { immediate: true }
 );
+
+const deleteTasting = () => {
+  emit('delete', tasting);
+};
 
 const averageRating = computed(() => {
   const totalRating = tasting.TastingRatings.reduce(
@@ -118,16 +95,13 @@ const averageRating = computed(() => {
   return (totalRating / tasting.TastingRatings.length).toFixed(1);
 });
 
-// Format date utility
 const formatDate = (dateString) => {
   const options = { year: 'numeric', month: 'short', day: 'numeric' };
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
-// State to track if image is expanded
 const isExpanded = ref(false);
 
-// Toggle expand state
 const toggleExpand = () => {
   isExpanded.value = !isExpanded.value;
 };

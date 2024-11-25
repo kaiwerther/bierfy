@@ -5,7 +5,7 @@
       <router-link
         v-if="isAuthenticated"
         class="navbar-brand fancy-text"
-        to="/tastings"
+        to="/tastings/list"
         >Bierfy</router-link
       >
       <router-link v-else class="navbar-brand fancy-text" to="/"
@@ -25,7 +25,7 @@
       <div id="navbarNav" class="collapse navbar-collapse">
         <ul class="navbar-nav ms-auto">
           <li v-if="isAuthenticated" class="nav-item">
-            <router-link class="nav-link" to="/tastings"
+            <router-link class="nav-link" to="/tastings/list"
               >My Tastings</router-link
             >
           </li>

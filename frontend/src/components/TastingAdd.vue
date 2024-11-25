@@ -17,6 +17,24 @@
         <label for="image" class="form-label">Image</label>
         <ImageUpload @image-changed="imageData = $event" />
       </div>
+      <!-- Address and Map -->
+      <div class="mb-3">
+        <label for="address" class="form-label">Location</label>
+        <input
+          id="address"
+          v-model="customAddress"
+          class="form-control"
+          placeholder="Enter custom address (optional)"
+        />
+        <button
+          type="button"
+          class="btn btn-secondary mt-2"
+          @click="fetchCoordinatesFromAddress"
+        >
+          Update Location
+        </button>
+        <div id="map" class="map-container mt-3"></div>
+      </div>
       <!-- Submit Button -->
       <button type="submit" class="btn btn-primary">Add Tasting</button>
       <button type="button" class="btn btn-secondary ms-2" @click="cancel">
@@ -31,8 +49,10 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue';
+import { ref, watch, onMounted } from 'vue';
 import axios from 'axios';
+import L from 'leaflet'; // Leaflet for maps
+import 'leaflet/dist/leaflet.css';
 import { useRouter } from 'vue-router';
 import BeerInput from './BeerComponent/BeerInput.vue';
 import RatingInput from './BeerComponent/RatingInput.vue';
@@ -40,14 +60,85 @@ import ImageUpload from './BeerComponent/ImageUpload.vue';
 
 const beerError = ref(false);
 const ratingError = ref(false);
+const locationError = ref('');
 const router = useRouter();
 const selectedBeer = ref(null); // Holds the selected beer object
 const tastings = ref([]);
 const imageData = ref(null);
-
 const error = ref('');
 
-// reset error b ooleans when value changes
+// Location state
+const latitude = ref(null);
+const longitude = ref(null);
+const map = ref(null); // Leaflet map instance
+const customAddress = ref(''); // Custom address input
+
+// Fetch location on mount
+onMounted(() => {
+  if (!navigator.geolocation) {
+    locationError.value = 'Geolocation is not supported by your browser.';
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    (position) => {
+      latitude.value = position.coords.latitude;
+      longitude.value = position.coords.longitude;
+      initializeMap(latitude.value, longitude.value);
+    },
+    (err) => {
+      console.error('Error fetching location:', err);
+      locationError.value = 'Unable to retrieve your location.';
+    }
+  );
+});
+
+// Initialize the map
+const initializeMap = (lat, lng) => {
+  if (map.value) {
+    map.value.setView([lat, lng], 13);
+    return;
+  }
+
+  map.value = L.map('map').setView([lat, lng], 13);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+  }).addTo(map.value);
+
+  const marker = L.marker([lat, lng]).addTo(map.value);
+  watch([latitude, longitude], () => {
+    marker.setLatLng([latitude.value, longitude.value]);
+  });
+};
+
+// Fetch coordinates from the custom address
+const fetchCoordinatesFromAddress = async () => {
+  try {
+    const response = await axios.get(
+      'https://nominatim.openstreetmap.org/search',
+      {
+        params: {
+          q: customAddress.value,
+          format: 'json',
+        },
+      }
+    );
+
+    if (response.data.length > 0) {
+      const location = response.data[0];
+      latitude.value = parseFloat(location.lat);
+      longitude.value = parseFloat(location.lon);
+      initializeMap(latitude.value, longitude.value);
+    } else {
+      alert('Address not found. Please try a different one.');
+    }
+  } catch (err) {
+    console.error('Error fetching coordinates from address:', err);
+    alert('Failed to fetch location. Please try again later.');
+  }
+};
+
+// Reset error booleans when value changes
 watch(selectedBeer, () => {
   error.value = '';
   beerError.value = false;
@@ -71,10 +162,11 @@ const handleSubmit = async () => {
     ratingError.value = true;
     return;
   }
+
   try {
     const beer = selectedBeer.value.beer;
     const company = selectedBeer.value.company;
-    // create new company if companyid is negative
+
     if (company.id < 0) {
       const response = await axios.post('/api/beers/companies', {
         name: company.name,
@@ -82,7 +174,6 @@ const handleSubmit = async () => {
       company.id = response.data.id;
     }
 
-    // create new beer if beerid is negative
     if (beer.id < 0) {
       const response = await axios.post('/api/beers', {
         name: beer.name,
@@ -98,7 +189,11 @@ const handleSubmit = async () => {
 
     const formData = new FormData();
     formData.append('beer_id', beer.id);
-    formData.append('ratings', JSON.stringify(transformedRatings)); // Assuming ratings is an array
+    formData.append('ratings', JSON.stringify(transformedRatings));
+    if (latitude.value && longitude.value) {
+      formData.append('latitude', latitude.value);
+      formData.append('longitude', longitude.value);
+    }
     if (imageData.value) {
       formData.append(
         'image',
@@ -111,7 +206,7 @@ const handleSubmit = async () => {
         'Content-Type': 'multipart/form-data',
       },
     });
-    router.push('/tastings');
+    router.push('/tastings/list');
   } catch (err) {
     console.error('Error adding tasting:', err);
     error.value =
@@ -135,29 +230,16 @@ const convertDataURLToFile = (dataURL, filename) => {
 };
 
 const cancel = () => {
-  router.push('/tastings');
+  router.push('/tastings/list');
 };
 </script>
 
 <style scoped>
-.star {
-  font-size: 1.5rem;
-  margin-right: 0.25rem;
-  cursor: pointer;
-  transition:
-    transform 0.2s ease-in-out,
-    color 0.2s ease-in-out;
-}
-
-.star:hover {
-  transform: scale(1.3);
-}
-
-.star .text-warning {
-  color: #ffc107;
-}
-
-.star .text-secondary {
-  color: #6c757d;
+.map-container {
+  height: 300px;
+  width: 100%;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
 }
 </style>

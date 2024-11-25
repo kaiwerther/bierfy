@@ -8,7 +8,8 @@ import Register from '../components/AuthRegister.vue';
 import GoogleCallback from '../components/AuthGoogleCallback.vue';
 import Home from '../components/MainPage.vue';
 import Profile from '../components/UserProfile.vue';
-import TastingsView from '../components/TastingsView.vue';
+import TastingsViewList from '../components/TastingsViewList.vue';
+import TastingsViewMap from '../components/TastingsViewMap.vue';
 import TastingAdd from '../components/TastingAdd.vue';
 
 const routes = [
@@ -18,8 +19,13 @@ const routes = [
   { path: '/auth/google/callback', component: GoogleCallback },
   { path: '/profile', component: Profile, meta: { requiresAuth: true } },
   {
-    path: '/tastings',
-    component: TastingsView,
+    path: '/tastings/list',
+    component: TastingsViewList,
+    meta: { requiresAuth: true },
+  },
+  {
+    path: '/tastings/map',
+    component: TastingsViewMap,
     meta: { requiresAuth: true },
   },
   {

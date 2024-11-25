@@ -30,7 +30,7 @@ onMounted(() => {
     // Redirect after a short delay if accounts were merged
     const redirectDelay = merged.value ? 3000 : 0;
     setTimeout(() => {
-      router.push('/tastings');
+      router.push('/tastings/list');
       toast.success("You're now logged in!");
     }, redirectDelay);
   } else {

@@ -24,8 +24,8 @@
 
 <script setup>
 import { ref, onMounted, watch } from 'vue';
+import api from '../../api';
 import SelectWithDummy from './SelectWithDummy.vue';
-import axios from 'axios';
 
 const emit = defineEmits(['update:modelValue']);
 const companies = ref([]);
@@ -47,7 +47,7 @@ const selectedBeer = ref(props.modelValue?.beer || null);
 
 // load list of companies on page load from api
 onMounted(async () => {
-  const response = await axios.get('/api/beers/companies');
+  const response = await api.fetchCompanies();
   companies.value = response.data.map((company) => ({
     value: company.id,
     label: company.name,
@@ -60,9 +60,7 @@ watch(
   async (newCompany) => {
     // only for positive value because negative values are new companies
     if (newCompany.value && newCompany.value.value > 0) {
-      const response = await axios.get('/api/beers', {
-        params: { company_id: newCompany.value.value },
-      });
+      const response = await api.fetchBeers(newCompany.value.value);
       beersPerCompany.value[newCompany.value.value] = response.data.map(
         (beer) => ({
           value: beer.id,

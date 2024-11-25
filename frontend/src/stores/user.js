@@ -1,7 +1,8 @@
 // src/stores/user.js
 import { defineStore } from 'pinia';
-import axios from 'axios';
+import api from '../api';
 import router from '../router';
+import axios from 'axios';
 
 export const useUserStore = defineStore('user', {
   state: () => ({
@@ -11,26 +12,18 @@ export const useUserStore = defineStore('user', {
   actions: {
     async login(email, password) {
       try {
-        const response = await axios.post('/api/auth/login', {
-          email,
-          password,
-        });
+        const response = await api.login(email, password);
         const { token, user } = response.data;
         this.token = token;
         this.user = user;
         localStorage.setItem('token', token);
-        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
       } catch (err) {
         throw err.response?.data?.error || 'An error occurred during login.';
       }
     },
     async register(username, email, password) {
       try {
-        await axios.post('/api/auth/register', {
-          username,
-          email,
-          password,
-        });
+        await api.register(username, email, password);
       } catch (err) {
         throw (
           err.response?.data?.error || 'An error occurred during registration.'
@@ -58,13 +51,14 @@ export const useUserStore = defineStore('user', {
         try {
           await this.fetchUser();
         } catch (err) {
+          console.error(err);
           this.logout();
         }
       }
     },
     async fetchUser() {
       try {
-        const response = await axios.get('/api/auth/me');
+        const response = await api.fetchUser();
         this.user = response.data.user;
       } catch (err) {
         this.logout();

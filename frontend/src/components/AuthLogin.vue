@@ -76,7 +76,7 @@ const handleLogin = async () => {
     error.value = '';
     await userStore.login(email.value, password.value);
     // Redirect to home page or dashboard
-    router.push('/tastings');
+    router.push('/tastings/list');
   } catch (err) {
     error.value = err;
   }
@@ -91,7 +91,7 @@ onMounted(() => {
   // Check for error message in query params
   if (userStore.user) {
     toast.success('Already logged in :)');
-    router.push('/tastings');
+    router.push('/tastings/list');
   }
   console.log(userStore.user);
   if (route.query.error) {

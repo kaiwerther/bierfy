@@ -4,13 +4,9 @@
       <!-- Upload Buttons -->
       <div v-if="!imageData" class="text-center">
         <!-- Take Photo Button (Visible only on Mobile) -->
-        <button
-          type="button"
-          class="btn btn-primary btn-lg d-md-none me-2"
-          for="cameraInput"
-        >
+        <label class="btn btn-primary btn-lg d-md-none me-2" for="cameraInput">
           <font-awesome-icon icon="camera" class="me-2" /> Take Photo
-        </button>
+        </label>
         <input
           id="cameraInput"
           type="file"
@@ -53,7 +49,6 @@
                 style="width: 100%; max-height: 400px"
                 @crop="onCrop"
                 @cropend="onCropEnd"
-                @zoom="onZoom"
               />
             </div>
           </div>
@@ -99,6 +94,7 @@ import { ref } from 'vue';
 import Cropper from 'vue-cropperjs';
 import 'cropperjs/dist/cropper.css';
 import { useToast } from 'vue-toastification';
+
 const toast = useToast();
 
 // Reactive References
@@ -110,27 +106,24 @@ const isLoading = ref(false);
 // Define Emits
 const emit = defineEmits(['image-changed']);
 
-// Define Zoom Constraints
-const MIN_ZOOM = 1; // Minimum zoom level
-const MAX_ZOOM = 3; // Maximum zoom level
-let currentZoom = 1;
-
 // Handle File Input Change
 const onFileChange = (event) => {
   const file = event.target.files[0];
-  if (file && file.type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      imageData.value = e.target.result;
-      croppedImage.value = null; // Reset cropped image
-      currentZoom = 1; // Reset zoom level
-      if (cropper.value && cropper.value.cropper) {
-        cropper.value.cropper.reset(); // Reset Cropper to initial state
-      }
-    };
-    reader.readAsDataURL(file);
-  } else {
-    if (!file.type.startsWith('image/')) {
+  if (file) {
+    if (file.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        imageData.value = e.target.result;
+        croppedImage.value = null; // Reset cropped image
+        if (cropper.value && cropper.value.cropper) {
+          cropper.value.cropper.reset(); // Reset Cropper to initial state
+        }
+      };
+      reader.onerror = () => {
+        toast.error('Failed to read the image file.', { duration: 3000 });
+      };
+      reader.readAsDataURL(file);
+    } else {
       toast.error('Please select a valid image file.', { duration: 3000 });
     }
   }
@@ -151,6 +144,8 @@ const cropAndEmit = () => {
     emitCroppedImage(dataUrl);
   }
 };
+
+// Debounce Function
 const debounce = (func, delay) => {
   let timeout;
   return (...args) => {
@@ -173,26 +168,13 @@ const onCropEnd = () => {
   cropAndEmit();
 };
 
-// Handle Zoom Event
-const onZoom = (event) => {
-  // Update current zoom level
-  currentZoom += event.detail.delta;
-
-  // Clamp the zoom level within defined limits
-  if (currentZoom < MIN_ZOOM) {
-    currentZoom = MIN_ZOOM;
-    cropper.value.cropper.zoomTo(currentZoom);
-  } else if (currentZoom > MAX_ZOOM) {
-    currentZoom = MAX_ZOOM;
-    cropper.value.cropper.zoomTo(currentZoom);
-  }
-};
-
 // Reset Image Selection
 const resetImage = () => {
   imageData.value = null;
   croppedImage.value = null;
-  currentZoom = 1;
+  if (cropper.value && cropper.value.cropper) {
+    cropper.value.cropper.reset();
+  }
 };
 
 // Emit Cropped Image to Parent
