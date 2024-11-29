@@ -91,7 +91,9 @@ const createMarkers = async () => {
 
   // Iterate over each tasting and add a marker if it has valid coordinates
   for (const tasting of tastings.value) {
+    console.log(tasting);
     if (tasting.latitude && tasting.longitude) {
+      console.log('Adding marker for:', tasting);
       const marker = addMarker(tasting.latitude, tasting.longitude);
 
       // Create popup content and bind to marker

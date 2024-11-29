@@ -54,6 +54,7 @@ import { ref, watch, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import { useTastingsStore } from '../stores/tastings';
 import { useLeaflet } from '../composables/useLeaflet'; // Import the composable
+import { useToast } from 'vue-toastification';
 import BeerInput from './BeerComponent/BeerInput.vue';
 import RatingInput from './BeerComponent/RatingInput.vue';
 import ImageUpload from './BeerComponent/ImageUpload.vue';
@@ -64,6 +65,7 @@ const ratingError = ref(false);
 const locationError = ref('');
 const router = useRouter();
 const store = useTastingsStore();
+const toast = useToast();
 
 const selectedBeer = ref(null); // Holds the selected beer object
 const tastings = ref([]);
@@ -76,7 +78,7 @@ const longitude = ref(null);
 const customAddress = ref(''); // Custom address input
 
 // Initialize Leaflet map using the composable
-const { initializeMap, updateMarker } = useLeaflet('map');
+const { initializeMap, addMarker, updateMarker } = useLeaflet('map');
 
 // Fetch location on mount
 onMounted(() => {
@@ -90,6 +92,7 @@ onMounted(() => {
       latitude.value = position.coords.latitude;
       longitude.value = position.coords.longitude;
       initializeMap(latitude.value, longitude.value);
+      addMarker(latitude.value, longitude.value);
     },
     (err) => {
       console.error('Error fetching location:', err);
@@ -182,7 +185,7 @@ const handleSubmit = async () => {
 
     // Add tasting via the store
     await store.addTasting(formData);
-
+    toast.success('Tasting added successfully');
     // Redirect after successful addition
     router.push('/tastings/list');
   } catch (err) {
@@ -190,6 +193,7 @@ const handleSubmit = async () => {
     error.value =
       err.response?.data?.error ||
       'An error occurred while adding the tasting.';
+    toast.error(error.value);
   }
 };
 

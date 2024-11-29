@@ -60,7 +60,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue';
 import SelectWithDummy from './SelectWithDummy.vue';
-import axios from 'axios';
+import api from '../../api';
 const emit = defineEmits(['update:modelValue']);
 const hoverRating = ref({});
 
@@ -136,7 +136,7 @@ const calculateTestersForTasting = (tasting) => {
 
 // load list of tasters on page load from api
 onMounted(async () => {
-  const response = await axios.get('/api/tastings/tasters');
+  const response = await api.fetchTasters();
   existingTasters.value = response.data.map((taster) => ({
     value: taster.taster,
     label: taster.taster,

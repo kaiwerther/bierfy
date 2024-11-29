@@ -12,6 +12,7 @@ export default function authenticateToken(req, res, next) {
 
   jwt.verify(token, process.env.JWT_SECRET, (err, userPayload) => {
     if (err) return res.status(403).json({ message: 'Invalid token' });
+    console.log('set user payload for url ', req.url);
     req.user = userPayload;
     next();
   });

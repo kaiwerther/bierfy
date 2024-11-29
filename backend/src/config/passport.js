@@ -14,6 +14,7 @@ passport.use(
     },
     async (req, accessToken, refreshToken, profile, done) => {
       try {
+        console.log('Google profile2:', profile);
         const { user, merged } = await findOrCreateGoogleUser(profile);
         req.userData = { user, merged }; // Attach userData to req
         done(null, user);

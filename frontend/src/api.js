@@ -49,6 +49,9 @@ export default {
   deleteTasting(tastingId) {
     return apiClient.delete(`/api/tastings/${tastingId}`);
   },
+  fetchTasters() {
+    return apiClient.get('/api/tastings/tasters');
+  },
 
   // Beers and Companies
   fetchCompanies() {

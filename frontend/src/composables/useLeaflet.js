@@ -17,6 +17,9 @@ L.Icon.Default.mergeOptions({
   shadowUrl: markerShadow,
 });
 
+// Import your beer icon image
+import beerIcon from '../assets/beer-icon.png';
+
 /**
  * useLeaflet
  * A composable to initialize and manage Leaflet maps.
@@ -27,6 +30,14 @@ L.Icon.Default.mergeOptions({
 export function useLeaflet(mapId) {
   const map = ref(null);
   const markers = ref([]);
+
+  // Create a custom beer icon
+  const beerIconMarker = L.icon({
+    iconUrl: beerIcon,
+    iconSize: [32, 37], // Adjust the size if needed
+    iconAnchor: [16, 16], // Point of the icon which corresponds to marker's location
+    popupAnchor: [0, -37], // Point from which the popup opens relative to the iconAnchor
+  });
 
   /**
    * Initialize the Leaflet map.
@@ -61,7 +72,9 @@ export function useLeaflet(mapId) {
       return;
     }
 
-    const marker = L.marker([lat, lng]).addTo(map.value);
+    const marker = L.marker([lat, lng], { icon: beerIconMarker }).addTo(
+      map.value
+    );
     markers.value.push(marker);
     return marker;
   };
@@ -74,6 +87,13 @@ export function useLeaflet(mapId) {
       map.value.removeLayer(marker);
     });
     markers.value = [];
+  };
+
+  // Add the updateMarker function
+  const updateMarker = (lat, lng) => {
+    clearMarkers();
+    addMarker(lat, lng);
+    map.value.setView([lat, lng]); // Re-center the map
   };
 
   /**
@@ -97,5 +117,6 @@ export function useLeaflet(mapId) {
     initializeMap,
     addMarker,
     clearMarkers,
+    updateMarker, // Include updateMarker in the returned object
   };
 }

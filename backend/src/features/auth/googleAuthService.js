@@ -2,6 +2,7 @@
 import db from '../../models/index.js';
 
 export async function findOrCreateGoogleUser(profile) {
+  console.log(profile.emails);
   const email = profile.emails[0].value;
 
   // Find user by Google ID

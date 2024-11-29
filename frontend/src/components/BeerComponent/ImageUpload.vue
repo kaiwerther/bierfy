@@ -110,7 +110,7 @@ const emit = defineEmits(['image-changed']);
 const onFileChange = (event) => {
   const file = event.target.files[0];
   if (file) {
-    if (file.type.startsWith('image/')) {
+    if (!file.type || file.type.startsWith('image/')) {
       const reader = new FileReader();
       reader.onload = (e) => {
         imageData.value = e.target.result;

@@ -2,7 +2,6 @@
 import express from 'express';
 import passport from 'passport';
 import jwt from 'jsonwebtoken';
-import { findOrCreateGoogleUser } from './googleAuthService.js';
 
 const router = express.Router();
 
@@ -31,8 +30,7 @@ function initiateGoogleOAuth(req, res, next) {
 
 async function googleCallbackHandler(req, res) {
   try {
-    const profile = req.user;
-    const { user, merged } = await findOrCreateGoogleUser(profile);
+    const user = req.user;
 
     // Generate JWT Token
     const token = jwt.sign(
@@ -42,7 +40,7 @@ async function googleCallbackHandler(req, res) {
 
     // Redirect to frontend with token
     res.redirect(
-      `${process.env.FRONTEND_URL}/auth/google/callback?token=${token}&merged=${merged}`
+      `${process.env.FRONTEND_URL}/auth/google/callback?token=${token}&merged=${req.merged}`
     );
   } catch (error) {
     console.error('Error in Google callback:', error);

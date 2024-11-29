@@ -58,6 +58,7 @@ const handleDeleteTasting = async (tastingId) => {
       toast.success('Tasting deleted successfully');
     } catch (error) {
       console.error('Error deleting tasting:', error);
+      toast.error('Failed to delete tasting');
     }
   }
 };

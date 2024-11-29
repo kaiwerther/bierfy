@@ -40,7 +40,7 @@ let redirectTimeout = null;
 const progressBarWidth = ref(0);
 
 // Computed property to check if the user is logged in
-const isLoggedIn = computed(() => !!userStore.user.username);
+const isLoggedIn = computed(() => !!userStore.user?.username);
 
 onMounted(() => {
   if (isLoggedIn.value) {

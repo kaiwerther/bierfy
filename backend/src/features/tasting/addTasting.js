@@ -90,7 +90,7 @@ async function addTastingService(data) {
     // Fetch the complete tasting with associations
     const createdTasting = await db.Tasting.findOne({
       where: { id: tasting.id },
-      attributes: ['id', 'created_at'],
+      attributes: ['id', 'created_at', 'latitude', 'longitude'],
       include: [
         {
           model: db.Beer,
